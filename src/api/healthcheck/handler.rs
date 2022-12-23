@@ -3,17 +3,9 @@ use rocket::{
     http::Status,
     serde::json::Json,
 };
-use serde::{
-    Deserialize,
-    Serialize,
-};
 
+use super::Healthcheck;
 use crate::Response;
-
-#[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct Healthcheck {
-    message: String,
-}
 
 #[get("/healthcheck")]
 pub(crate) async fn healthcheck(

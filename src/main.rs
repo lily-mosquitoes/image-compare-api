@@ -1,6 +1,9 @@
+mod api;
+
 #[macro_use]
 extern crate rocket;
 
+use api::healthcheck::handler;
 use chrono::{
     DateTime,
     Utc,
@@ -9,10 +12,6 @@ use serde::{
     Deserialize,
     Serialize,
 };
-
-mod api;
-
-use api::healthcheck::handler;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Response<T> {

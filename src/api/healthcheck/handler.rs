@@ -1,7 +1,4 @@
-use chrono::{
-    DateTime,
-    Utc,
-};
+use chrono::Utc;
 use rocket::{
     http::Status,
     serde::json::Json,
@@ -11,14 +8,7 @@ use serde::{
     Serialize,
 };
 
-#[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct Response<T> {
-    timestamp: DateTime<Utc>,
-    // request_id: RequestId,
-    // traceback: Option<Error>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    data: Option<T>,
-}
+use crate::Response;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Healthcheck {
@@ -51,7 +41,7 @@ mod test {
             client.get(uri!("/api", super::healthcheck)).dispatch();
         assert_eq!(response.status(), Status::Ok);
         let body = response
-            .into_json::<super::Response<super::Healthcheck>>();
+            .into_json::<crate::Response<super::Healthcheck>>();
         assert!(body.is_some());
     }
 }

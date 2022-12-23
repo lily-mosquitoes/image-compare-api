@@ -3,7 +3,6 @@ mod api;
 #[macro_use]
 extern crate rocket;
 
-use api::healthcheck::handler;
 use chrono::{
     DateTime,
     Utc,
@@ -11,6 +10,11 @@ use chrono::{
 use serde::{
     Deserialize,
     Serialize,
+};
+
+use crate::api::{
+    healthcheck::handler::healthcheck,
+    images::handler::images_to_compare,
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -24,5 +28,6 @@ pub(crate) struct Response<T> {
 
 #[launch]
 pub(crate) fn rocket() -> _ {
-    rocket::build().mount("/api", routes![handler::healthcheck,])
+    rocket::build()
+        .mount("/api", routes![healthcheck, images_to_compare])
 }

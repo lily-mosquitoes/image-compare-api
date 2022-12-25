@@ -4,44 +4,91 @@ use rocket::{
     serde::json::Json,
 };
 
-use super::ImagesToCompare;
+use super::{
+    get_random_image_file_name,
+    ImagesToCompare,
+    IoError,
+};
 use crate::Response;
 
 #[get("/images")]
 pub(crate) async fn images_to_compare(
-) -> (Status, Json<Response<ImagesToCompare>>) {
-    let images = ImagesToCompare {
-        path_to_image1: "".to_string(),
-        path_to_image2: "".to_string(),
+) -> (Status, Json<Response<ImagesToCompare, IoError>>) {
+    let (status, traceback, data) = match (
+        get_random_image_file_name(),
+        get_random_image_file_name(),
+    ) {
+        (Ok(path_to_image1), Ok(path_to_image2)) => (
+            Status::Ok,
+            None,
+            Some(ImagesToCompare {
+                path_to_image1,
+                path_to_image2,
+            }),
+        ),
+        (Ok(_), Err(error)) => {
+            (Status::InternalServerError, Some(error), None)
+        },
+        (Err(error), Ok(_)) => {
+            (Status::InternalServerError, Some(error), None)
+        },
+        (Err(error), Err(_)) => {
+            (Status::InternalServerError, Some(error), None)
+        },
     };
 
     let response = Response {
         timestamp: Utc::now(),
-        data: Some(images),
+        traceback,
+        data,
     };
 
-    (Status::Ok, Json(response))
+    (status, Json(response))
 }
 
 #[cfg(test)]
 mod test {
+    use std::{
+        ffi::OsString,
+        fs,
+    };
+
+    use dotenvy_macro::dotenv;
     use rocket::{
         http::Status,
         local::blocking::Client,
     };
 
+    fn file_exists(file_name: &str) -> bool {
+        let static_files_dir = dotenv!("STATIC_FILES_DIR");
+
+        let entries: Vec<OsString> = fs::read_dir(static_files_dir)
+            .expect("`STATIC_FILES_DIR` to exist and be accessible")
+            .filter_map(|x| x.ok())
+            .map(|x| x.file_name())
+            .collect();
+
+        entries.contains(&OsString::from(file_name))
+    }
+
     #[test]
-    fn healthcheck() {
+    fn images_to_compare() {
         let client = Client::tracked(crate::rocket())
             .expect("valid rocket instance");
         let response = client
             .get(uri!("/api", super::images_to_compare))
             .dispatch();
         assert_eq!(response.status(), Status::Ok);
-        let body = response
-            .into_json::<crate::Response<super::ImagesToCompare>>();
+        let body =
+            response.into_json::<crate::Response<
+                super::ImagesToCompare,
+                super::IoError,
+            >>();
         assert!(body.is_some());
         let data = body.unwrap().data;
         assert!(data.is_some());
+        let images_to_compare = data.unwrap();
+        assert!(file_exists(&images_to_compare.path_to_image1));
+        assert!(file_exists(&images_to_compare.path_to_image2));
     }
 }

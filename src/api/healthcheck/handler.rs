@@ -4,14 +4,14 @@ use rocket::{
     serde::json::Json,
 };
 
-use super::Healthcheck;
 use crate::Response;
 
 #[get("/healthcheck")]
-pub(crate) async fn healthcheck(
-) -> (Status, Json<Response<Healthcheck>>) {
+pub(crate) async fn healthcheck() -> (Status, Json<Response<(), ()>>)
+{
     let response = Response {
         timestamp: Utc::now(),
+        traceback: None,
         data: None,
     };
 
@@ -32,8 +32,7 @@ mod test {
         let response =
             client.get(uri!("/api", super::healthcheck)).dispatch();
         assert_eq!(response.status(), Status::Ok);
-        let body = response
-            .into_json::<crate::Response<super::Healthcheck>>();
+        let body = response.into_json::<crate::Response<(), ()>>();
         assert!(body.is_some());
     }
 }

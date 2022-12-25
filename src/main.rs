@@ -30,16 +30,13 @@ pub(crate) struct Response<T, E> {
 fn setup_logger() -> Result<(), fern::InitError> {
     fern::Dispatch::new()
         .format(|out, message, record| {
-            if !record.target().contains("rocket") {
-                out.finish(format_args!(
-                    "{}[{}][{}] {}",
-                    chrono::Local::now()
-                        .format("[%Y-%m-%d][%H:%M:%S]"),
-                    record.target(),
-                    record.level(),
-                    message,
-                ))
-            }
+            out.finish(format_args!(
+                "{}[{}][{}] {}",
+                chrono::Local::now().format("[%Y-%m-%d][%H:%M:%S]"),
+                record.target(),
+                record.level(),
+                message,
+            ))
         })
         .level(log::LevelFilter::Debug)
         .chain(std::io::stdout())

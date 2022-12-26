@@ -61,14 +61,15 @@ mod test {
             .dispatch();
         assert_eq!(response.status(), Status::Ok);
         let body =
-            response.into_json::<crate::Response<
-                super::ImagesToCompare,
-                super::IoError,
-            >>();
-        assert!(body.is_some());
-        let data = body.unwrap().data;
-        assert!(data.is_ok());
-        let images_to_compare = data.unwrap();
+            response
+                .into_json::<crate::Response<
+                    super::ImagesToCompare,
+                    super::IoError,
+                >>()
+                .expect("body to be present");
+        assert!(body.data.is_some());
+        assert!(body.error.is_none());
+        let images_to_compare = body.data.unwrap();
         assert!(file_exists(&images_to_compare.image1.src));
         assert!(file_exists(&images_to_compare.image2.src));
     }

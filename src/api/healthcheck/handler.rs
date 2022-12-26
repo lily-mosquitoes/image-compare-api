@@ -1,4 +1,3 @@
-use chrono::Utc;
 use rocket::{
     http::Status,
     serde::json::Json,
@@ -9,11 +8,7 @@ use crate::Response;
 #[get("/healthcheck")]
 pub(crate) async fn healthcheck() -> (Status, Json<Response<(), ()>>)
 {
-    let response = Response {
-        timestamp: Utc::now(),
-        traceback: None,
-        data: None,
-    };
+    let response = Response::build();
 
     (Status::Ok, Json(response))
 }

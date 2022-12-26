@@ -7,6 +7,11 @@ use chrono::{
     DateTime,
     Utc,
 };
+use dotenvy_macro::dotenv;
+use rocket::{
+    fs::FileServer,
+    serde::json::Json,
+};
 use serde::{
     Deserialize,
     Serialize,
@@ -17,14 +22,51 @@ use crate::api::{
     images::handler::images_to_compare,
 };
 
+pub(crate) static STATIC_FILES_DIR: &'static str =
+    dotenv!("STATIC_FILES_DIR");
+
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Response<T, E> {
     timestamp: DateTime<Utc>,
     // request_id: RequestId,
     #[serde(skip_serializing_if = "Option::is_none")]
-    traceback: Option<E>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     data: Option<T>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    traceback: Option<E>,
+}
+
+impl<T, E> Response<T, E> {
+    fn build() -> Self {
+        Response::<T, E> {
+            timestamp: Utc::now(),
+            data: None,
+            traceback: None,
+        }
+    }
+
+    fn set_data(mut self, data: Option<T>) -> Self {
+        self.data = data;
+        self
+    }
+
+    fn set_traceback(mut self, traceback: Option<E>) -> Self {
+        self.traceback = traceback;
+        self
+    }
+}
+
+#[derive(Debug, Serialize)]
+enum NotFound {
+    ResourceNotFound(String),
+}
+
+#[catch(404)]
+async fn not_found(
+    request: &rocket::Request<'_>,
+) -> Json<Response<(), NotFound>> {
+    let traceback =
+        Some(NotFound::ResourceNotFound(request.uri().to_string()));
+    Json(Response::build().set_traceback(traceback))
 }
 
 fn setup_logger() -> Result<(), fern::InitError> {
@@ -55,5 +97,7 @@ pub(crate) fn rocket() -> _ {
     }
 
     rocket::build()
+        .register("/", catchers![not_found])
         .mount("/api", routes![healthcheck, images_to_compare])
+        .mount("/images", FileServer::from(STATIC_FILES_DIR))
 }

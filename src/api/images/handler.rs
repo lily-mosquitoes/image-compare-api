@@ -69,7 +69,7 @@ mod test {
     }
 
     #[test]
-    fn images_to_compare() {
+    fn get_images_to_compare() {
         let client = Client::tracked(crate::rocket())
             .expect("valid rocket instance");
         let response = client

@@ -13,16 +13,15 @@ use crate::Response;
 #[get("/images")]
 pub(crate) async fn images_to_compare(
 ) -> (Status, Json<Response<ImagesToCompare, IoError>>) {
-    let (status, data, traceback) =
-        match get_random_images_to_compare() {
-            Ok(images) => (Status::Ok, Some(images), None),
-            Err(error) => {
-                (Status::InternalServerError, None, Some(error))
-            },
-        };
+    let (status, data) = match get_random_images_to_compare() {
+        Ok(images) => (Status::Ok, Ok(images)),
+        Err(error) => {
+            error!("{}", error);
+            (Status::InternalServerError, Err(error))
+        },
+    };
 
-    let response =
-        Response::build().set_data(data).set_traceback(traceback);
+    let response = Response::new_with_data(data);
 
     (status, Json(response))
 }
@@ -68,7 +67,7 @@ mod test {
             >>();
         assert!(body.is_some());
         let data = body.unwrap().data;
-        assert!(data.is_some());
+        assert!(data.is_ok());
         let images_to_compare = data.unwrap();
         assert!(file_exists(&images_to_compare.image1.src));
         assert!(file_exists(&images_to_compare.image2.src));

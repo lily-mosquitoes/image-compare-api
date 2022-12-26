@@ -1,5 +1,7 @@
 pub(crate) mod handler;
 
+use std::fmt;
+
 use rand::Rng;
 use serde::{
     Deserialize,
@@ -34,6 +36,17 @@ impl ImagesToCompare {
 pub(crate) enum IoError {
     OsError(String),
     FileServerError(String),
+}
+
+impl fmt::Display for IoError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            IoError::OsError(e) => write!(f, "OsError: {}", e),
+            IoError::FileServerError(e) => {
+                write!(f, "FileServerError: {}", e)
+            },
+        }
+    }
 }
 
 fn get_random_image_file_name() -> Result<String, IoError> {

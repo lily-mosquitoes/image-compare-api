@@ -32,10 +32,10 @@ enum NotFound {
 async fn not_found(
     request: &rocket::Request<'_>,
 ) -> Json<Response<(), NotFound>> {
-    let traceback =
-        Some(NotFound::ResourceNotFound(request.uri().to_string()));
+    let result =
+        Err(NotFound::ResourceNotFound(request.uri().to_string()));
 
-    Json(Response::build().set_traceback(traceback))
+    Json(Response::new_with_data(result))
 }
 
 #[launch]

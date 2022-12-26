@@ -10,32 +10,27 @@ use serde::{
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Response<T, E> {
     pub(crate) timestamp: DateTime<Utc>,
-    // request_id: RequestId,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub(crate) data: Option<T>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub(crate) traceback: Option<E>,
+    pub(crate) data: Result<T, E>,
 }
 
 impl<T, E> Response<T, E> {
-    pub(crate) fn build() -> Self {
+    pub(crate) fn new_with_data(data: Result<T, E>) -> Self {
         Response::<T, E> {
             timestamp: Utc::now(),
-            data: None,
-            traceback: None,
+            data,
         }
     }
+}
 
-    pub(crate) fn set_data(mut self, data: Option<T>) -> Self {
-        self.data = data;
-        self
-    }
-
-    pub(crate) fn set_traceback(
-        mut self,
-        traceback: Option<E>,
-    ) -> Self {
-        self.traceback = traceback;
-        self
+#[cfg(test)]
+mod test {
+    #[test]
+    fn make_response() {
+        let ok_result: Result<i8, u8> = Ok(-2);
+        let err_result: Result<i8, u8> = Err(2);
+        let ok = super::Response::new_with_data(ok_result);
+        let err = super::Response::new_with_data(err_result);
+        assert!(ok.data.is_ok());
+        assert!(err.data.is_err());
     }
 }

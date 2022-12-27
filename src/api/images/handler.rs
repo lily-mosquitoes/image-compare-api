@@ -28,29 +28,12 @@ pub(crate) async fn images_to_compare(
 
 #[cfg(test)]
 mod test {
-    use std::{
-        ffi::OsString,
-        fs,
-    };
-
     use rocket::{
         http::Status,
         local::blocking::Client,
     };
 
-    fn file_exists(file_name: &str) -> bool {
-        let static_files_dir = crate::STATIC_FILES_DIR;
-
-        let entries: Vec<OsString> = fs::read_dir(static_files_dir)
-            .expect("`STATIC_FILES_DIR` to exist and be accessible")
-            .filter_map(|x| x.ok())
-            .map(|x| x.file_name())
-            .collect();
-
-        entries.contains(&OsString::from(
-            file_name.replace("/images/", ""),
-        ))
-    }
+    use crate::test_helpers::file_exists;
 
     #[test]
     fn get_images_to_compare() {
@@ -70,8 +53,12 @@ mod test {
         assert!(body.data.is_some());
         assert!(body.error.is_none());
         let images_to_compare = body.data.unwrap();
-        assert!(file_exists(&images_to_compare.image1.src));
-        assert!(file_exists(&images_to_compare.image2.src));
+        assert!(file_exists(
+            &images_to_compare.image1.src.replace("/images/", ""),
+        ));
+        assert!(file_exists(
+            &images_to_compare.image2.src.replace("/images/", ""),
+        ));
     }
 
     #[test]

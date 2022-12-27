@@ -94,23 +94,7 @@ pub(crate) fn get_random_images_to_compare(
 
 #[cfg(test)]
 mod test {
-    use std::{
-        ffi::OsString,
-        fs,
-    };
-
-    fn file_exists(file_name: &str) -> bool {
-        let entries: Vec<OsString> =
-            fs::read_dir(crate::STATIC_FILES_DIR)
-                .expect(
-                    "`STATIC_FILES_DIR` to exist and be accessible",
-                )
-                .filter_map(|x| x.ok())
-                .map(|x| x.file_name())
-                .collect();
-
-        entries.contains(&OsString::from(file_name))
-    }
+    use crate::test_helpers::file_exists;
 
     #[test]
     fn get_random_image_file_name() {

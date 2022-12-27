@@ -52,3 +52,23 @@ pub(crate) fn rocket() -> _ {
         .mount("/api", routes![healthcheck, images_to_compare])
         .mount("/images", FileServer::from(STATIC_FILES_DIR))
 }
+
+#[cfg(test)]
+pub(crate) mod test_helpers {
+    use std::{
+        ffi::OsString,
+        fs,
+    };
+
+    pub(crate) fn file_exists(file_name: &str) -> bool {
+        let static_files_dir = crate::STATIC_FILES_DIR;
+
+        let entries: Vec<OsString> = fs::read_dir(static_files_dir)
+            .expect("`STATIC_FILES_DIR` to exist and be accessible")
+            .filter_map(|x| x.ok())
+            .map(|x| x.file_name())
+            .collect();
+
+        entries.contains(&OsString::from(file_name))
+    }
+}

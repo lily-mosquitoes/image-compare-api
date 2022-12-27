@@ -17,7 +17,7 @@ pub(crate) struct Response<T, E> {
 }
 
 impl<T, E> Response<T, E> {
-    pub(crate) fn new_with_data(result: Result<T, E>) -> Self {
+    pub(crate) fn from_result(result: Result<T, E>) -> Self {
         let (data, error) = match result {
             Ok(value) => (Some(value), None),
             Err(error) => (None, Some(error)),
@@ -34,14 +34,14 @@ impl<T, E> Response<T, E> {
 #[cfg(test)]
 mod test {
     #[test]
-    fn make_response() {
+    fn make_response_from_result() {
         let ok_result: Result<i8, u8> = Ok(-2);
         let err_result: Result<i8, u8> = Err(2);
-        let ok = super::Response::new_with_data(ok_result);
-        let err = super::Response::new_with_data(err_result);
-        assert!(ok.data.is_some());
-        assert!(ok.error.is_none());
-        assert!(err.data.is_none());
-        assert!(err.error.is_some());
+        let ok_response = super::Response::from_result(ok_result);
+        let err_response = super::Response::from_result(err_result);
+        assert!(ok_response.data.is_some());
+        assert!(ok_response.error.is_none());
+        assert!(err_response.data.is_none());
+        assert!(err_response.error.is_some());
     }
 }

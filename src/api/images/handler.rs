@@ -21,7 +21,7 @@ pub(crate) async fn images_to_compare(
         },
     };
 
-    let response = Response::new_with_data(data);
+    let response = Response::from_result(data);
 
     (status, Json(response))
 }

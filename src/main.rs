@@ -35,7 +35,7 @@ async fn not_found(
     let result =
         Err(NotFound::ResourceNotFound(request.uri().to_string()));
 
-    Json(Response::new_with_data(result))
+    Json(Response::from_result(result))
 }
 
 #[launch]

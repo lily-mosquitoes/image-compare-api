@@ -8,7 +8,7 @@ use crate::Response;
 #[get("/healthcheck")]
 pub(crate) async fn healthcheck() -> (Status, Json<Response<(), ()>>)
 {
-    let response = Response::new_with_data(Ok(()));
+    let response = Response::from_result(Ok(()));
 
     (Status::Ok, Json(response))
 }

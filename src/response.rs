@@ -33,15 +33,42 @@ impl<T, E> Response<T, E> {
 
 #[cfg(test)]
 mod test {
+    use chrono::{
+        DateTime,
+        Utc,
+    };
+
+    macro_rules! assert_struct_has_field {
+        ($struct:ty, $field:ident : $type:ty) => {
+            const _: () = {
+                fn mock(s: $struct) {
+                    let _: $type = s.$field;
+                }
+            };
+        };
+    }
+
     #[test]
-    fn make_response_from_result() {
-        let ok_result: Result<i8, u8> = Ok(-2);
-        let err_result: Result<i8, u8> = Err(2);
-        let ok_response = super::Response::from_result(ok_result);
-        let err_response = super::Response::from_result(err_result);
-        assert!(ok_response.data.is_some());
-        assert!(ok_response.error.is_none());
-        assert!(err_response.data.is_none());
-        assert!(err_response.error.is_some());
+    fn response_has_timestamp() {
+        assert_struct_has_field!(
+            super::Response<(), ()>,
+            timestamp: DateTime<Utc>
+        );
+    }
+
+    #[test]
+    fn make_response_from_ok_result() {
+        let result: Result<i8, u8> = Ok(-2);
+        let response = super::Response::from_result(result);
+        assert!(response.data.is_some());
+        assert!(response.error.is_none());
+    }
+
+    #[test]
+    fn make_response_from_err_result() {
+        let result: Result<i8, u8> = Err(2);
+        let response = super::Response::from_result(result);
+        assert!(response.data.is_none());
+        assert!(response.error.is_some());
     }
 }

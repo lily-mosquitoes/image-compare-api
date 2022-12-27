@@ -40,12 +40,8 @@ async fn not_found(
 
 #[launch]
 pub(crate) fn rocket() -> _ {
-    let logger = crate::logger::setup();
-    if let Err(error) = logger {
-        // error happens on tests when rocket is initialized multiple
-        // times
-        error!("{}", error);
-    }
+    #[cfg(not(test))]
+    crate::logger::setup().expect("logger to start up");
 
     rocket::build()
         .register("/", catchers![not_found])

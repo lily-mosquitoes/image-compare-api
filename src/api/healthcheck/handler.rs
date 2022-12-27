@@ -27,7 +27,5 @@ mod test {
         let response =
             client.get(uri!("/api", super::healthcheck)).dispatch();
         assert_eq!(response.status(), Status::Ok);
-        let body = response.into_json::<crate::Response<(), ()>>();
-        assert!(body.is_some());
     }
 }

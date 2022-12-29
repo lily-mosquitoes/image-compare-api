@@ -50,21 +50,20 @@ impl fmt::Display for IoError {
 }
 
 fn get_random_image_file_name() -> Result<String, IoError> {
-    let images: Vec<String> =
-        std::fs::read_dir(crate::STATIC_FILES_DIR)
-            .map_err(|error| {
-                IoError::OsError(error.kind().to_string())
-            })?
-            .filter_map(|x| x.ok())
-            .map(|x| x.file_name().into_string())
-            .filter_map(|x| match x {
-                Ok(value) => Some(value),
-                Err(error) => {
-                    error!("Invalid UTF Character in: {:?}", error);
-                    None
-                },
-            })
-            .collect();
+    let static_files_dir = &*crate::STATIC_FILES_DIR;
+
+    let images: Vec<String> = std::fs::read_dir(static_files_dir)
+        .map_err(|error| IoError::OsError(error.kind().to_string()))?
+        .filter_map(|x| x.ok())
+        .map(|x| x.file_name().into_string())
+        .filter_map(|x| match x {
+            Ok(value) => Some(value),
+            Err(error) => {
+                error!("Invalid UTF Character in: {:?}", error);
+                None
+            },
+        })
+        .collect();
 
     if images.len() <= 0 {
         let error = "Empty STATIC_FILES_DIR".to_string();

@@ -28,17 +28,16 @@ pub(crate) async fn images_to_compare(
 
 #[cfg(test)]
 mod test {
-    use rocket::{
-        http::Status,
-        local::blocking::Client,
-    };
+    use rocket::http::Status;
 
-    use crate::test_helpers::file_exists;
+    use crate::test_helpers::{
+        file_exists,
+        get_rocket_client,
+    };
 
     #[test]
     fn get_images_to_compare() {
-        let client = Client::tracked(crate::rocket())
-            .expect("valid rocket instance");
+        let client = get_rocket_client();
         let response = client
             .get(uri!("/api", super::images_to_compare))
             .dispatch();
@@ -66,8 +65,7 @@ mod test {
         let images = super::get_random_images_to_compare()
             .expect("Images to be found");
         let image_uri = format!("/images/{}", images.image1.src);
-        let client = Client::tracked(crate::rocket())
-            .expect("valid rocket instance");
+        let client = get_rocket_client();
         let response = client.get(image_uri).dispatch();
         assert_eq!(response.status(), Status::Ok);
     }

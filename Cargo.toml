@@ -8,6 +8,7 @@ rocket = { version = "0.5.0-rc.2", features = ["json", "secrets"] }
 serde = { version = "1.0.151", features = ["derive"] }
 chrono = { version = "0.4.23", features = ["clock", "serde"] }
 rand = "0.8.5"
-dotenvy_macro = "0.15.1"
+dotenvy = "0.15.6"
+lazy_static = "1.4"
 log = "0.4"
 fern = "0.6"

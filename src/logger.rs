@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 pub(crate) fn setup() -> Result<(), fern::InitError> {
     fern::Dispatch::new()
         .format(|out, message, record| {

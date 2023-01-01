@@ -1,6 +1,7 @@
 mod api;
 mod logger;
 mod response;
+mod statics;
 
 #[macro_use]
 extern crate lazy_static;
@@ -8,9 +9,6 @@ extern crate lazy_static;
 #[macro_use]
 extern crate rocket;
 
-use std::sync::Once;
-
-use dotenvy;
 use rocket::{
     fs::FileServer,
     serde::json::Json,
@@ -24,22 +22,6 @@ use crate::{
     },
     response::Response,
 };
-
-static LOAD_ENV: Once = Once::new();
-
-fn load_static_files_dir() -> String {
-    LOAD_ENV.call_once(|| {
-        dotenvy::dotenv().expect(".env to be present");
-    });
-
-    std::env::var("STATIC_FILES_DIR")
-        .expect("`STATIC_FILES_DIR to be set in .env`")
-}
-
-lazy_static! {
-    pub(crate) static ref STATIC_FILES_DIR: String =
-        load_static_files_dir();
-}
 
 #[derive(Debug, Serialize)]
 enum NotFound {
@@ -59,12 +41,18 @@ async fn not_found(
 #[launch]
 pub(crate) fn rocket() -> _ {
     #[cfg(not(test))]
-    crate::logger::setup().expect("logger to start up");
+    if let Err(error) = crate::logger::setup() {
+        error!("{}", error);
+        panic!("failed to setup logger");
+    }
 
     rocket::build()
         .register("/", catchers![not_found])
         .mount("/api", routes![healthcheck, images_to_compare])
-        .mount("/images", FileServer::from(&*STATIC_FILES_DIR))
+        .mount(
+            "/images",
+            FileServer::from(&*crate::statics::STATIC_FILES_DIR),
+        )
 }
 
 #[cfg(test)]
@@ -82,7 +70,7 @@ pub(crate) mod test_helpers {
     }
 
     pub(crate) fn file_exists(file_name: &str) -> bool {
-        let static_files_dir = &*crate::STATIC_FILES_DIR;
+        let static_files_dir = &*crate::statics::STATIC_FILES_DIR;
 
         let entries: Vec<OsString> = fs::read_dir(static_files_dir)
             .expect("`STATIC_FILES_DIR` to exist and be accessible")

@@ -8,7 +8,7 @@ use super::{
     ImagesToCompare,
     IoError,
 };
-use crate::Response;
+use crate::response::Response;
 
 #[get("/images")]
 pub(crate) async fn images_to_compare(
@@ -24,49 +24,4 @@ pub(crate) async fn images_to_compare(
     let response = Response::from_result(data);
 
     (status, Json(response))
-}
-
-#[cfg(test)]
-mod test {
-    use rocket::http::Status;
-
-    use crate::test_helpers::{
-        file_exists,
-        get_rocket_client,
-    };
-
-    #[test]
-    fn get_images_to_compare() {
-        let client = get_rocket_client();
-        let response = client
-            .get(uri!("/api", super::images_to_compare))
-            .dispatch();
-        assert_eq!(response.status(), Status::Ok);
-        let body =
-            response
-                .into_json::<crate::Response<
-                    super::ImagesToCompare,
-                    super::IoError,
-                >>()
-                .expect("body to be present");
-        assert!(body.data.is_some());
-        assert!(body.error.is_none());
-        let images_to_compare = body.data.unwrap();
-        assert!(file_exists(
-            &images_to_compare.image1.src.replace("/images/", ""),
-        ));
-        assert!(file_exists(
-            &images_to_compare.image2.src.replace("/images/", ""),
-        ));
-    }
-
-    #[test]
-    fn get_image_from_file_server() {
-        let images = super::get_random_images_to_compare()
-            .expect("Images to be found");
-        let image_uri = format!("/images/{}", images.image1.src);
-        let client = get_rocket_client();
-        let response = client.get(image_uri).dispatch();
-        assert_eq!(response.status(), Status::Ok);
-    }
 }

@@ -3,12 +3,9 @@ pub(crate) mod handler;
 use std::fmt;
 
 use rand::Rng;
-use serde::{
-    Deserialize,
-    Serialize,
-};
+use serde::Serialize;
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub(crate) struct Image {
     id: i64,
     src: String,
@@ -20,7 +17,7 @@ impl Image {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 pub(crate) struct ImagesToCompare {
     image1: Image,
     image2: Image,
@@ -32,7 +29,7 @@ impl ImagesToCompare {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 pub(crate) enum IoError {
     OsError(String),
     FileServerError(String),
@@ -93,10 +90,20 @@ pub(crate) fn get_random_images_to_compare(
 
 #[cfg(test)]
 mod test {
+    use rocket::fs::relative;
+
     use crate::test_helpers::file_exists;
+
+    fn setup_test_static_files_dir() {
+        std::env::set_var(
+            "STATIC_FILES_DIR",
+            relative!("tests/test_static_files_dirs/with_file"),
+        );
+    }
 
     #[test]
     fn get_random_image_file_name() {
+        setup_test_static_files_dir();
         let file_name = super::get_random_image_file_name()
             .expect("random image file name to be found");
         assert!(file_exists(&file_name));
@@ -113,6 +120,7 @@ mod test {
 
     #[test]
     fn get_random_image() {
+        setup_test_static_files_dir();
         let image = super::get_random_image()
             .expect("random image to be found");
         assert!(file_exists(&image.src));
@@ -136,6 +144,7 @@ mod test {
 
     #[test]
     fn get_random_images_to_compare() {
+        setup_test_static_files_dir();
         let images_to_compare = super::get_random_images_to_compare()
             .expect("random images to be found");
         assert!(file_exists(&images_to_compare.image1.src));

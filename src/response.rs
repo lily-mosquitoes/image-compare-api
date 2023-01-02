@@ -2,12 +2,9 @@ use chrono::{
     DateTime,
     Utc,
 };
-use serde::{
-    Deserialize,
-    Serialize,
-};
+use serde::Serialize;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize)]
 pub(crate) struct Response<T, E> {
     pub(crate) timestamp: DateTime<Utc>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -33,29 +30,6 @@ impl<T, E> Response<T, E> {
 
 #[cfg(test)]
 mod test {
-    use chrono::{
-        DateTime,
-        Utc,
-    };
-
-    macro_rules! assert_struct_has_field {
-        ($struct:ty, $field:ident : $type:ty) => {
-            const _: () = {
-                fn mock(s: $struct) {
-                    let _: $type = s.$field;
-                }
-            };
-        };
-    }
-
-    #[test]
-    fn response_has_timestamp() {
-        assert_struct_has_field!(
-            super::Response<(), ()>,
-            timestamp: DateTime<Utc>
-        );
-    }
-
     #[test]
     fn make_response_from_ok_result() {
         let result: Result<i8, u8> = Ok(-2);

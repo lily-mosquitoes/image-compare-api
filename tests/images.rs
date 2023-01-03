@@ -4,7 +4,6 @@ use common::{
     ErrResponse,
     NotFound,
     OkResponse,
-    TwoImages,
 };
 use image_compare_api;
 use rocket::{
@@ -13,6 +12,20 @@ use rocket::{
     local::blocking::Client,
     uri,
 };
+use serde::Deserialize;
+
+#[derive(Deserialize)]
+struct Image {
+    #[allow(dead_code)]
+    id: i64,
+    src: String,
+}
+
+#[derive(Deserialize)]
+struct TwoImages {
+    image1: Image,
+    image2: Image,
+}
 
 fn get_http_client() -> Client {
     std::env::set_var(

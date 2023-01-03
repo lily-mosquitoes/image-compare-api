@@ -2,7 +2,6 @@ mod common;
 
 use common::{
     ErrResponse,
-    IoError,
     NotFound,
 };
 use image_compare_api;
@@ -12,6 +11,12 @@ use rocket::{
     local::blocking::Client,
     uri,
 };
+use serde::Deserialize;
+
+#[derive(Debug, PartialEq, Deserialize)]
+enum IoError {
+    FileServerError(String),
+}
 
 fn get_http_client() -> Client {
     std::env::set_var(

@@ -1,7 +1,7 @@
 mod api;
 mod catchers;
+mod config;
 mod response;
-mod statics;
 
 #[macro_use]
 extern crate lazy_static;
@@ -27,7 +27,7 @@ pub fn rocket() -> Rocket<Build> {
         )
         .mount(
             "/api/images",
-            FileServer::from(&*crate::statics::STATIC_FILES_DIR),
+            FileServer::from(&*crate::config::STATIC_FILES_DIR),
         )
 }
 
@@ -39,7 +39,7 @@ pub(crate) mod test_helpers {
     };
 
     pub(crate) fn file_exists(file_name: &str) -> bool {
-        let static_files_dir = &*crate::statics::STATIC_FILES_DIR;
+        let static_files_dir = &*crate::config::STATIC_FILES_DIR;
 
         let entries: Vec<OsString> = fs::read_dir(static_files_dir)
             .expect("`STATIC_FILES_DIR` to exist and be accessible")

@@ -47,7 +47,7 @@ impl fmt::Display for IoError {
 }
 
 fn get_random_image_file_name() -> Result<String, IoError> {
-    let static_files_dir = &*crate::statics::STATIC_FILES_DIR;
+    let static_files_dir = &*crate::config::STATIC_FILES_DIR;
 
     let images: Vec<String> = std::fs::read_dir(static_files_dir)
         .map_err(|error| IoError::OsError(error.kind().to_string()))?

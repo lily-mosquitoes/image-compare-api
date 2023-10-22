@@ -14,7 +14,7 @@ use rocket::{
     uri,
 };
 
-static STATIC_DIR: &'static str = relative!("tests/test_static_dirs");
+static STATIC_DIR: &'static str = relative!("tests/test_static_dirs/temp");
 
 fn get_http_client() -> Client {
     let temp_dir = generate_random_hex_string(8);

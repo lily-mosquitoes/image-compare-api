@@ -1,6 +1,9 @@
 # build artifacts
 /target
 
+# test artifacts
+/tests/test_static_dirs/temp
+
 # environment variables
 .env
 !.env.*

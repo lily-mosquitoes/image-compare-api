@@ -1,3 +1,6 @@
+# build artifacts
 /target
+
+# environment variables
 .env
 !.env.*

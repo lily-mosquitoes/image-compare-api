@@ -1,10 +1,11 @@
 mod common;
 
-use common::{
-    ErrResponse,
-    NotFound,
-    OkResponse,
+use std::path::{
+    Path,
+    PathBuf,
 };
+
+use common::ErrResponse;
 use image_compare_api;
 use rocket::{
     fs::relative,
@@ -12,80 +13,46 @@ use rocket::{
     local::blocking::Client,
     uri,
 };
-use serde::Deserialize;
 
-#[derive(Deserialize)]
-struct Image {
-    #[allow(dead_code)]
-    id: i64,
-    src: String,
-}
-
-#[derive(Deserialize)]
-struct TwoImages {
-    image1: Image,
-    image2: Image,
-}
+static STATIC_DIR: &'static str =
+    relative!("tests/test_static_dirs/with_2_files");
 
 fn get_http_client() -> Client {
-    std::env::set_var(
-        "STATIC_FILES_DIR",
-        relative!("tests/test_static_files_dirs/with_file"),
-    );
-
-    Client::tracked(image_compare_api::rocket())
+    let static_dir = PathBuf::from(STATIC_DIR);
+    Client::tracked(image_compare_api::rocket(static_dir))
         .expect("valid rocket instance")
 }
 
 #[test]
-fn get_images_returns_ok() {
+fn get_images_with_existing_file_name_returns_200_ok() {
     let client = get_http_client();
-    let response = client.get(uri!("/api/images")).dispatch();
-    assert_eq!(response.status(), Status::Ok);
-}
-
-#[test]
-fn get_images_is_json_ok_response() {
-    let client = get_http_client();
-    let response = client.get(uri!("/api/images")).dispatch();
-    let body = response.into_json::<OkResponse<TwoImages>>();
-    assert!(body.is_some());
-}
-
-#[test]
-fn get_images_returns_image_in_static_src_folder() {
-    let client = get_http_client();
-    let response = client.get(uri!("/api/images")).dispatch();
-    let body = response
-        .into_json::<OkResponse<TwoImages>>()
-        .expect("body to be present");
-    let test_file = "test_file.png";
-    assert_eq!(&body.data.image1.src, test_file);
-    assert_eq!(&body.data.image2.src, test_file);
-}
-
-#[test]
-fn get_images_with_existing_file_name_returns_ok() {
-    let client = get_http_client();
-    let response =
-        client.get(uri!("/api/images/test_file.png")).dispatch();
+    let response = client.get(uri!("/static/images/image%20A.png")).dispatch();
     assert_eq!(response.status(), Status::Ok);
 }
 
 #[test]
 fn get_images_with_existing_file_name_is_file_response() {
     let client = get_http_client();
-    let response =
-        client.get(uri!("/api/images/test_file.png")).dispatch();
+    let response = client.get(uri!("/static/images/image%20A.png")).dispatch();
     let body = response.into_bytes();
     assert!(body.is_some());
 }
 
 #[test]
-fn get_images_with_nonexisting_file_name_returns_404() {
+fn get_images_with_existing_file_name_is_file_in_static_files_dir() {
+    let client = get_http_client();
+    let response = client.get(uri!("/static/images/image%20A.png")).dispatch();
+    let body = response.into_bytes().unwrap();
+    let file_path = Path::new(STATIC_DIR).join("image A.png");
+    let file = std::fs::read(file_path).expect("file to be present");
+    assert_eq!(body, file);
+}
+
+#[test]
+fn get_images_with_nonexisting_file_name_returns_404_not_found() {
     let client = get_http_client();
     let response = client
-        .get(uri!("/api/images/shouldnt_exist.png"))
+        .get(uri!("/static/images/does_not_exist.png"))
         .dispatch();
     assert_eq!(response.status(), Status::NotFound);
 }
@@ -94,8 +61,8 @@ fn get_images_with_nonexisting_file_name_returns_404() {
 fn get_images_with_nonexisting_file_name_is_json_err_response() {
     let client = get_http_client();
     let response = client
-        .get(uri!("/api/images/shouldnt_exist.png"))
+        .get(uri!("/static/images/does_not_exist.png"))
         .dispatch();
-    let body = response.into_json::<ErrResponse<NotFound>>();
+    let body = response.into_json::<ErrResponse<String>>();
     assert!(body.is_some());
 }

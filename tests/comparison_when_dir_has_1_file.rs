@@ -2,7 +2,7 @@ mod common;
 
 use std::path::PathBuf;
 
-use common::OkResponse;
+use common::ErrResponse;
 use image_compare_api;
 use rocket::{
     fs::relative,
@@ -12,7 +12,7 @@ use rocket::{
 };
 
 static STATIC_DIR: &'static str =
-    relative!("tests/test_static_dirs/with_2_files");
+    relative!("tests/test_static_dirs/with_1_file");
 
 fn get_http_client() -> Client {
     let static_dir = PathBuf::from(STATIC_DIR);
@@ -21,16 +21,16 @@ fn get_http_client() -> Client {
 }
 
 #[test]
-fn get_healthcheck_returns_200_ok() {
+fn get_comparison_returns_503_service_unavailable() {
     let client = get_http_client();
-    let response = client.get(uri!("/api/healthcheck")).dispatch();
-    assert_eq!(response.status(), Status::Ok);
+    let response = client.get(uri!("/api/comparison")).dispatch();
+    assert_eq!(response.status(), Status::ServiceUnavailable);
 }
 
 #[test]
-fn get_healthcheck_is_json_ok_response() {
+fn get_comparison_is_json_err_response() {
     let client = get_http_client();
-    let response = client.get(uri!("/api/healthcheck")).dispatch();
-    let body = response.into_json::<OkResponse<()>>();
+    let response = client.get(uri!("/api/comparison")).dispatch();
+    let body = response.into_json::<ErrResponse<String>>();
     assert!(body.is_some());
 }

@@ -6,6 +6,7 @@ use serde::Serialize;
 
 #[derive(Debug, Serialize)]
 pub(crate) struct Response<T, E> {
+    pub(crate) request_id: usize,
     pub(crate) timestamp: DateTime<Utc>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) data: Option<T>,
@@ -21,6 +22,7 @@ impl<T, E> Response<T, E> {
         };
 
         Response::<T, E> {
+            request_id: 0,
             timestamp: Utc::now(),
             data,
             error,

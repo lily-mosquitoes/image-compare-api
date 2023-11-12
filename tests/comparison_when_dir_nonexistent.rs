@@ -20,7 +20,7 @@ fn get_http_client() -> Client {
     let temp_dir = generate_random_hex_string(8);
     let mut static_dir = PathBuf::from(STATIC_DIR);
     static_dir.push(temp_dir);
-    std::fs::create_dir(&static_dir).unwrap();
+    std::fs::create_dir_all(&static_dir).unwrap();
     let client = Client::tracked(image_compare_api::rocket(static_dir.clone()))
         .expect("valid rocket instance");
     std::fs::remove_dir(&static_dir).unwrap();

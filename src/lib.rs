@@ -36,6 +36,7 @@ pub fn rocket<P: AsRef<Path>>(static_dir: P) -> Rocket<Build> {
             routes![
                 crate::api::healthcheck::handler::healthcheck,
                 crate::api::comparison::handler::comparison,
+                crate::api::user::handler::user,
             ],
         )
         .mount(static_dir.origin.clone(), FileServer::from(&static_dir.path))

@@ -1,50 +1,52 @@
 pub(crate) mod handler;
 
-use std::{
-    error::Error,
-    fmt,
-    path::Path,
-};
+use std::path::Path;
 
 use rand::Rng;
-use serde::{
-    Serialize,
-    Serializer,
+use rocket::{
+    http::{
+        uri::Origin,
+        RawStr,
+    },
+    serde::uuid::Uuid,
 };
+use serde::Serialize;
 
-#[derive(Debug, PartialEq)]
-pub(crate) enum IoError {
-    OsError(String),
-    FileServerError(String),
+use crate::StaticDir;
+
+#[derive(Serialize)]
+pub(crate) struct Comparison<'a> {
+    pub(crate) id: Uuid,
+    pub(crate) images: Vec<Origin<'a>>,
 }
 
-impl fmt::Display for IoError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::OsError(e) => write!(f, "OsError: {}", e),
-            Self::FileServerError(e) => {
-                write!(f, "FileServerError: {}", e)
-            },
-        }
+fn get_comparison(
+    static_dir: &StaticDir,
+) -> Result<Comparison<'_>, sqlx::Error> {
+    let mut images = Vec::<Origin<'_>>::new();
+    for _ in 0..2 {
+        let file_name = get_random_image_file_name(&static_dir.path)?;
+        let encoded = RawStr::new(&file_name).percent_encode();
+        let origin =
+            Origin::parse_owned(format!("{}/{}", static_dir.origin, encoded))
+                .map_err(|e| {
+                std::io::Error::new(std::io::ErrorKind::Other, e.to_string())
+            })?;
+        images.push(origin);
     }
-}
 
-impl Error for IoError {}
+    let comparison = Comparison {
+        id: Uuid::parse_str("3fa85f64-5717-4562-b3fc-2c963f66afa6").unwrap(),
+        images,
+    };
 
-impl Serialize for IoError {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
-    }
+    Ok(comparison)
 }
 
 fn get_random_image_file_name<P: AsRef<Path>>(
     source: P,
-) -> Result<String, IoError> {
-    let images: Vec<String> = std::fs::read_dir(source)
-        .map_err(|error| IoError::OsError(error.kind().to_string()))?
+) -> Result<String, std::io::Error> {
+    let images: Vec<String> = std::fs::read_dir(source)?
         .filter_map(|x| x.ok())
         .map(|x| x.file_name().into_string())
         .filter_map(|x| match x {
@@ -57,9 +59,9 @@ fn get_random_image_file_name<P: AsRef<Path>>(
         .collect();
 
     if images.len() < 2 {
-        let error = "Not enough files in STATIC_FILES_DIR".to_string();
+        let error = "Not enough files in STATIC_FILES_DIR";
         error!("{}", error);
-        return Err(IoError::FileServerError(error));
+        return Err(std::io::Error::new(std::io::ErrorKind::Other, error));
     }
 
     let index = rand::thread_rng().gen_range(0..images.len());
@@ -98,20 +100,9 @@ mod test {
     fn get_random_image_file_name_when_dir_has_1_file() {
         let source = relative!("tests/test_static_dirs/with_1_file");
         let error = super::get_random_image_file_name(&source);
-        let expected_error = Err(super::IoError::FileServerError(
-            "Not enough files in STATIC_FILES_DIR".to_string(),
-        ));
-        assert_eq!(error, expected_error);
-    }
-
-    #[test]
-    fn get_random_image_file_name_when_dir_is_empty() {
-        let source = relative!("tests/test_static_dirs/empty");
-        let error = super::get_random_image_file_name(&source);
-        let expected_error = Err(super::IoError::FileServerError(
-            "Not enough files in STATIC_FILES_DIR".to_string(),
-        ));
-        assert_eq!(error, expected_error);
+        let expected_error =
+            Err("Not enough files in STATIC_FILES_DIR".to_string());
+        assert_eq!(error.map_err(|error| error.to_string()), expected_error);
     }
 
     #[test]
@@ -119,7 +110,7 @@ mod test {
         let source = relative!("tests/test_static_dirs/nonexistent");
         let error = super::get_random_image_file_name(&source);
         let expected_error =
-            Err(super::IoError::OsError("entity not found".to_string()));
-        assert_eq!(error, expected_error);
+            Err("No such file or directory (os error 2)".to_string());
+        assert_eq!(error.map_err(|error| error.to_string()), expected_error);
     }
 }

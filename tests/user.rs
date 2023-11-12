@@ -59,8 +59,8 @@ fn get_user_with_correct_id_returns_expected_user() {
         .expect("body to be present");
     let expected_user = User {
         id: Uuid::parse_str("3fa85f64-5717-4562-b3fc-2c963f66afa6").unwrap(),
-        comparisons: 0,
-        average_lambda: 0.0,
+        comparisons: 7,
+        average_lambda: 0.1234,
     };
     assert_eq!(body.data, expected_user);
 }

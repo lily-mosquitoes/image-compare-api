@@ -21,22 +21,44 @@ use rocket::{
     Build,
     Rocket,
 };
+use rocket_db_pools::Database;
+use sqlx::{
+    sqlite::SqliteConnectOptions,
+    ConnectOptions,
+};
 
-pub fn rocket<P: AsRef<Path>>(static_dir: P) -> Rocket<Build> {
+pub fn rocket<P: AsRef<Path>>(
+    static_dir: P,
+    connection_options: SqliteConnectOptions,
+) -> Rocket<Build> {
     let static_dir = StaticDir {
         path: static_dir.as_ref().to_path_buf(),
         origin: Origin::parse("/static/images").unwrap(),
     };
+    println!("ERROR: {:?}", &connection_options.clone().get_url().to_string());
 
-    rocket::build()
+    let figment = rocket::Config::figment().merge((
+        "databases.main",
+        rocket_db_pools::Config {
+            url: connection_options.get_url().to_string(),
+            min_connections: None,
+            max_connections: 10,
+            connect_timeout: 3,
+            idle_timeout: None,
+        },
+    ));
+
+    rocket::custom(figment)
         .attach(CORS)
+        .attach(DbPool::init())
         .register("/", catchers![crate::catchers::not_found])
         .mount(
             "/api",
             routes![
                 crate::api::healthcheck::handler::healthcheck,
-                crate::api::comparison::handler::comparison,
-                crate::api::user::handler::user,
+                crate::api::comparison::handler::get_comparison,
+                crate::api::user::handler::get_user,
+                crate::api::user::handler::generate_user,
             ],
         )
         .mount(static_dir.origin.clone(), FileServer::from(&static_dir.path))
@@ -47,6 +69,10 @@ pub(crate) struct StaticDir {
     pub(crate) path: PathBuf,
     pub(crate) origin: Origin<'static>,
 }
+
+#[derive(Database)]
+#[database("main")]
+pub(crate) struct DbPool(sqlx::SqlitePool);
 
 struct CORS;
 

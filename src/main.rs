@@ -1,9 +1,13 @@
 mod logger;
 
-use std::path::PathBuf;
+use std::{
+    path::PathBuf,
+    str::FromStr,
+};
 
 use image_compare_api;
 use log::error;
+use sqlx::sqlite::SqliteConnectOptions;
 
 #[rocket::main]
 async fn main() -> Result<(), rocket::Error> {
@@ -17,7 +21,11 @@ async fn main() -> Result<(), rocket::Error> {
         std::env::var("STATIC_DIR").expect("`STATIC_DIR to be set in .env`");
     let static_dir = PathBuf::from(static_dir);
 
-    let _rocket = image_compare_api::rocket(static_dir)
+    let connection_options =
+        SqliteConnectOptions::from_str("sqlite://sqlite.db")
+            .expect("Url to be valid");
+
+    let _rocket = image_compare_api::rocket(static_dir, connection_options)
         .ignite()
         .await?
         .launch()

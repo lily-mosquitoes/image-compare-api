@@ -4,10 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-rocket = { version = "=0.5.0-rc.3", features = ["json", "uuid", "secrets"] }
+rocket = { path = "../Rocket/core/lib", features = ["json", "uuid", "secrets"] }
+rocket_db_pools = { path = "../Rocket/contrib/db_pools/lib", features = ["sqlx_sqlite"] }
 serde = { version = "=1.0.189", features = ["derive"] }
 chrono = { version = "0.4", features = ["clock", "serde"] }
-sqlx = { version = "0.7", features = [ "runtime-tokio" ] }
+sqlx = { path = "../sqlx", features = [ "runtime-tokio", "migrate", "sqlite"] }
 rand = "0.8"
 dotenvy = "0.15"
 log = "0.4"

@@ -12,7 +12,7 @@ use crate::{
 };
 
 #[get("/comparison")]
-pub(crate) async fn comparison<'a>(
+pub(crate) async fn get_comparison<'a>(
     static_dir: &'a State<StaticDir>,
 ) -> (Status, Json<Response<Comparison<'a>, RequestError<sqlx::Error>>>) {
     let result =

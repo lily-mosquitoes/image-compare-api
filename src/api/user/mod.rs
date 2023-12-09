@@ -1,10 +1,8 @@
 pub(crate) mod handler;
 
 use rocket::serde::uuid::Uuid;
-use rocket_db_pools::Connection;
 use serde::Serialize;
-
-use crate::DbPool;
+use sqlx::SqliteConnection;
 
 #[derive(Clone, Serialize)]
 #[serde(into = "Uuid")]
@@ -35,23 +33,30 @@ pub(crate) struct User {
 
 pub(crate) async fn get_user(
     id: Uuid,
-    mut connection: Connection<DbPool>,
+    connection: &mut SqliteConnection,
 ) -> Result<User, sqlx::Error> {
     sqlx::query_as!(User, "SELECT * FROM user WHERE id = ?", id)
-        .fetch_one(&mut **connection)
+        .fetch_one(connection)
         .await
 }
 
-pub(crate) fn generate_user() -> Result<User, sqlx::Error> {
-    let user = User {
-        id: SqliteUuid(
-            Uuid::parse_str("3fa85f64-5717-4562-b3fc-2c963f66afa6")
-                .unwrap()
-                .into_bytes()
-                .to_vec(),
-        ),
-        comparisons: 0,
-        average_lambda: 0.0,
-    };
-    Ok(user)
+pub(crate) async fn generate_user(
+    connection: &mut SqliteConnection,
+) -> Result<User, sqlx::Error> {
+    loop {
+        let id = Uuid::new_v4();
+        match get_user(id, connection).await {
+            Ok(_) => continue,
+            Err(sqlx::Error::RowNotFound) => {
+                return sqlx::query_as!(
+                    User,
+                    "INSERT INTO user (id) VALUES (?) RETURNING *",
+                    id
+                )
+                .fetch_one(connection)
+                .await
+            },
+            Err(error) => return Err(error),
+        }
+    }
 }

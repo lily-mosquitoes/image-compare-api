@@ -87,13 +87,13 @@ async fn get_user_with_correct_id_returns_expected_user(
 }
 
 #[sqlx::test]
-async fn generate_user_returns_200_ok(
+async fn generate_user_returns_201_created(
     _: SqlitePoolOptions,
     db_options: SqliteConnectOptions,
 ) {
     let client = get_http_client(db_options).await;
     let response = client.post(uri!("/api/user")).dispatch().await;
-    assert_eq!(response.status(), Status::Ok);
+    assert_eq!(response.status(), Status::Created);
 }
 
 #[sqlx::test]
@@ -124,4 +124,28 @@ async fn generate_user_returns_new_user(
         average_lambda: 0.0,
     };
     assert_eq!(body.data, expected_user);
+}
+
+#[sqlx::test]
+async fn generate_user_is_not_idempotent(
+    _: SqlitePoolOptions,
+    db_options: SqliteConnectOptions,
+) {
+    let client = get_http_client(db_options).await;
+
+    let response_a = client.post(uri!("/api/user")).dispatch().await;
+    let body_a = response_a
+        .into_json::<OkResponse<User>>()
+        .await
+        .expect("body to be present");
+    let user_a = body_a.data.id;
+
+    let response_b = client.post(uri!("/api/user")).dispatch().await;
+    let body_b = response_b
+        .into_json::<OkResponse<User>>()
+        .await
+        .expect("body to be present");
+    let user_b = body_b.data.id;
+
+    assert_ne!(user_a, user_b);
 }

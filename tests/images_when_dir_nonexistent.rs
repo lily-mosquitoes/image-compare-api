@@ -13,6 +13,7 @@ use rocket::{
     local::blocking::Client,
     uri,
 };
+use sqlx::sqlite::SqliteConnectOptions;
 
 static STATIC_DIR: &'static str = relative!("tests/test_static_dirs/temp");
 
@@ -21,9 +22,12 @@ fn get_http_client() -> Client {
     let mut static_dir = PathBuf::from(STATIC_DIR);
     static_dir.push(temp_dir);
     std::fs::create_dir(&static_dir).unwrap();
-    dbg!(&static_dir);
-    let client = Client::tracked(image_compare_api::rocket(static_dir.clone()))
-        .expect("valid rocket instance");
+    let db_options = SqliteConnectOptions::new();
+    let client = Client::untracked(image_compare_api::rocket(
+        static_dir.clone(),
+        db_options,
+    ))
+    .expect("valid rocket instance");
     std::fs::remove_dir(&static_dir).unwrap();
     client
 }

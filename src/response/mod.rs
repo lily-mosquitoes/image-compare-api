@@ -18,6 +18,7 @@ impl ToStatus for () {
 impl ToStatus for sqlx::Error {
     fn to_status(&self) -> Status {
         match self {
+            Self::RowNotFound => Status::NotFound,
             Self::Io(_) => Status::ServiceUnavailable,
             _ => Status::InternalServerError,
         }
@@ -122,8 +123,9 @@ mod test {
         assert_eq!(response.status(), Status::Created);
     }
 
+    #[test]
     fn get_status_from_err_response() {
-        let result: Result<i8, u8> = Err(2);
+        let result: Result<i8, ()> = Err(());
         let response =
             Response::from_result(result).with_success_status(Status::Created);
         assert_eq!(response.status(), Status::InternalServerError);

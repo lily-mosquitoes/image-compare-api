@@ -9,6 +9,7 @@ rocket_db_pools = { path = "../Rocket/contrib/db_pools/lib", features = ["sqlx_s
 serde = { version = "=1.0.189", features = ["derive"] }
 chrono = { version = "0.4", features = ["clock", "serde"] }
 sqlx = { path = "../sqlx", features = ["runtime-tokio", "migrate", "sqlite", "uuid"] }
+uuid = { version = "1", features = ["v4"] }
 rand = "0.8"
 dotenvy = "0.15"
 log = "0.4"

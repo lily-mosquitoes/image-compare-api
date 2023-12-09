@@ -8,7 +8,7 @@ rocket = { path = "../Rocket/core/lib", features = ["json", "uuid", "secrets"] }
 rocket_db_pools = { path = "../Rocket/contrib/db_pools/lib", features = ["sqlx_sqlite"] }
 serde = { version = "=1.0.189", features = ["derive"] }
 chrono = { version = "0.4", features = ["clock", "serde"] }
-sqlx = { path = "../sqlx", features = [ "runtime-tokio", "migrate", "sqlite"] }
+sqlx = { path = "../sqlx", features = ["runtime-tokio", "migrate", "sqlite", "uuid"] }
 rand = "0.8"
 dotenvy = "0.15"
 log = "0.4"

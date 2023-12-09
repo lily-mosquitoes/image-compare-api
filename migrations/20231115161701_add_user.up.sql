@@ -1,1 +1,5 @@
--- Add up migration script here
+CREATE TABLE IF NOT EXISTS user (
+	id BLOB PRIMARY KEY NOT NULL,
+	comparisons INT NOT NULL DEFAULT 0,
+	average_lambda FLOAT NOT NULL DEFAULT 0.0
+);

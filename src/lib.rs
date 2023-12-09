@@ -35,12 +35,11 @@ pub fn rocket<P: AsRef<Path>>(
         path: static_dir.as_ref().to_path_buf(),
         origin: Origin::parse("/static/images").unwrap(),
     };
-    println!("ERROR: {:?}", &connection_options.clone().get_url().to_string());
 
     let figment = rocket::Config::figment().merge((
         "databases.main",
         rocket_db_pools::Config {
-            url: connection_options.get_url().to_string(),
+            url: connection_options.to_url_lossy().to_string(),
             min_connections: None,
             max_connections: 10,
             connect_timeout: 3,

@@ -55,7 +55,7 @@ pub fn rocket<P: AsRef<Path>>(
             "/api",
             routes![
                 crate::api::healthcheck::handler::healthcheck,
-                crate::api::comparison::handler::get_comparison,
+                crate::api::comparison::handler::get_comparison_for_user,
                 crate::api::user::handler::get_user,
                 crate::api::user::handler::generate_user,
             ],

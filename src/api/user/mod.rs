@@ -1,28 +1,10 @@
 pub(crate) mod handler;
 
-use rocket::serde::uuid::Uuid;
+use uuid::Uuid;
 use serde::Serialize;
 use sqlx::SqliteConnection;
 
-#[derive(Clone, Serialize)]
-#[serde(into = "Uuid")]
-pub(crate) struct SqliteUuid(Vec<u8>);
-
-impl From<Vec<u8>> for SqliteUuid {
-    fn from(value: Vec<u8>) -> Self {
-        Self(value)
-    }
-}
-
-impl From<SqliteUuid> for Uuid {
-    fn from(value: SqliteUuid) -> Self {
-        let mut bytes = value.0.clone();
-        bytes.truncate(16);
-
-        Self::from_slice(&bytes)
-            .expect("BUG: 16 byte array should be a valid UUID.")
-    }
-}
+use super::SqliteUuid;
 
 #[derive(Serialize)]
 pub(crate) struct User {

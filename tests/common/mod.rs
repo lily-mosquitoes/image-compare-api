@@ -5,10 +5,6 @@ use chrono::{
     Utc,
 };
 use rand::RngCore;
-use rocket::{
-    http::uri::Origin,
-    serde::uuid::Uuid,
-};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -23,12 +19,6 @@ pub(crate) struct OkResponse<T> {
     pub(crate) request_id: usize,
     pub(crate) timestamp: DateTime<Utc>,
     pub(crate) data: T,
-}
-
-#[derive(Deserialize)]
-pub(crate) struct Comparison {
-    pub(crate) id: Uuid,
-    pub(crate) images: Vec<Origin<'static>>,
 }
 
 const HEX_CHARS: &[u8; 16] = b"0123456789abcdef";

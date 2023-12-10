@@ -20,7 +20,7 @@ static STATIC_DIR: &'static str =
 
 async fn get_http_client(db_options: SqliteConnectOptions) -> Client {
     let static_dir = PathBuf::from(STATIC_DIR);
-    Client::tracked(image_compare_api::rocket(static_dir, db_options))
+    Client::untracked(image_compare_api::rocket(static_dir, db_options))
         .await
         .expect("valid rocket instance")
 }

@@ -1,5 +1,6 @@
 # build artifacts
 /target
+*.sqlite
 
 # test artifacts
 /tests/test_static_dirs/temp

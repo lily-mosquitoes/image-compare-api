@@ -8,8 +8,11 @@ use uuid::Uuid;
 
 use super::Comparison;
 use crate::{
-    request::RequestError,
-    response::Response,
+    response::{
+        error::ApiError,
+        ResponseBody,
+        ToStatus,
+    },
     DbPool,
     StaticDir,
 };
@@ -19,12 +22,20 @@ pub(crate) async fn get_comparison_for_user<'a>(
     id: Uuid,
     mut connection: Connection<DbPool>,
     static_dir: &State<StaticDir>,
-) -> (Status, Json<Response<Comparison, RequestError<sqlx::Error>>>) {
-    let result =
-        super::get_comparison_for_user(id, &mut **connection, static_dir)
-            .await
-            .map_err(|error| error.into());
-    let response = Response::from_result(result);
+) -> (Status, Json<ResponseBody<Comparison, ApiError<sqlx::Error>>>) {
+    let user = crate::api::user::get_user(id, &mut **connection).await;
+    let comparison =
+        super::get_comparison_for_user(id, &mut **connection, static_dir).await;
 
-    (response.status(), Json(response))
+    match (user, comparison) {
+        (Err(error), _) => (error.to_status(), Json(Err(error.into()).into())),
+        (Ok(_), Err(sqlx::Error::RowNotFound)) => (
+            Status::ServiceUnavailable,
+            Json(Err(sqlx::Error::RowNotFound.into()).into()),
+        ),
+        (Ok(_), Err(error)) => {
+            (error.to_status(), Json(Err(error.into()).into()))
+        },
+        (Ok(_), Ok(comparison)) => (Status::Ok, Json(Ok(comparison).into())),
+    }
 }

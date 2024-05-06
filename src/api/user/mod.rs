@@ -1,8 +1,8 @@
 pub(crate) mod handler;
 
-use uuid::Uuid;
 use serde::Serialize;
 use sqlx::SqliteConnection;
+use uuid::Uuid;
 
 use super::SqliteUuid;
 

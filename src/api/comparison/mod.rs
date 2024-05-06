@@ -57,9 +57,12 @@ async fn get_comparison_for_user(
     let images = comparison
         .images
         .iter()
-        .map(|image| {
-            Origin::parse_owned(format!("{}/{}", static_dir.origin, image))
-                .expect("BUG: image should be parseable to origin.")
+        .map(|image_filename| {
+            Origin::parse_owned(format!(
+                "{}/{}",
+                static_dir.origin, image_filename
+            ))
+            .expect("BUG: image path should be parseable to origin.")
         })
         .collect();
 

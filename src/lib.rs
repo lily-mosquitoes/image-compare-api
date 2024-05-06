@@ -1,6 +1,5 @@
 mod api;
 mod catchers;
-mod request;
 mod response;
 
 #[macro_use]

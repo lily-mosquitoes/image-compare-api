@@ -3,11 +3,9 @@ use rocket::{
     serde::json::Json,
 };
 
-use crate::response::Response;
+use crate::response::ResponseBody;
 
 #[get("/healthcheck")]
-pub(crate) async fn healthcheck() -> (Status, Json<Response<(), ()>>) {
-    let response = Response::from_result(Ok(()));
-
-    (Status::Ok, Json(response))
+pub(crate) async fn healthcheck() -> (Status, Json<ResponseBody<(), ()>>) {
+    (Status::Ok, Json(Ok(()).into()))
 }

@@ -26,14 +26,14 @@ fn get_http_client() -> Client {
 }
 
 #[test]
-fn get_images_with_existing_file_name_returns_200_ok() {
+fn get_images_with_existing_filename_returns_200_ok() {
     let client = get_http_client();
     let response = client.get(uri!("/static/images/image%20A.png")).dispatch();
     assert_eq!(response.status(), Status::Ok);
 }
 
 #[test]
-fn get_images_with_existing_file_name_is_file_response() {
+fn get_images_with_existing_filename_is_file_response() {
     let client = get_http_client();
     let response = client.get(uri!("/static/images/image%20A.png")).dispatch();
     let body = response.into_bytes();
@@ -41,7 +41,7 @@ fn get_images_with_existing_file_name_is_file_response() {
 }
 
 #[test]
-fn get_images_with_existing_file_name_is_file_in_static_files_dir() {
+fn get_images_with_existing_filename_is_file_in_static_files_dir() {
     let client = get_http_client();
     let response = client.get(uri!("/static/images/image%20A.png")).dispatch();
     let body = response.into_bytes().unwrap();
@@ -51,7 +51,7 @@ fn get_images_with_existing_file_name_is_file_in_static_files_dir() {
 }
 
 #[test]
-fn get_images_with_nonexisting_file_name_returns_404_not_found() {
+fn get_images_with_nonexisting_filename_returns_404_not_found() {
     let client = get_http_client();
     let response = client
         .get(uri!("/static/images/does_not_exist.png"))
@@ -60,7 +60,7 @@ fn get_images_with_nonexisting_file_name_returns_404_not_found() {
 }
 
 #[test]
-fn get_images_with_nonexisting_file_name_is_json_err_response() {
+fn get_images_with_nonexisting_filename_is_json_err_response() {
     let client = get_http_client();
     let response = client
         .get(uri!("/static/images/does_not_exist.png"))

@@ -18,11 +18,9 @@ use sqlx::sqlite::{
     SqliteConnectOptions,
     SqlitePoolOptions,
 };
-use uuid::Uuid;
 
 #[derive(Deserialize)]
 struct Comparison {
-    id: Uuid,
     images: Vec<Origin<'static>>,
 }
 

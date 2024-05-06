@@ -3,13 +3,16 @@ use rocket::{
     serde::json::Json,
 };
 
-use crate::{
-    request::RequestError,
-    response::{
-        Response,
-        ToStatus,
-    },
+use crate::response::{
+    error::ApiError,
+    ResponseBody,
+    ToStatus,
 };
+
+#[catch(404)]
+pub(crate) async fn not_found() -> Json<ResponseBody<(), ApiError<NotFound>>> {
+    Json(Err(NotFound.into()).into())
+}
 
 #[derive(Debug)]
 pub(crate) struct NotFound;
@@ -26,11 +29,4 @@ impl ToStatus for NotFound {
     fn to_status(&self) -> Status {
         Status::NotFound
     }
-}
-
-#[catch(404)]
-pub(crate) async fn not_found() -> Json<Response<(), RequestError<NotFound>>> {
-    let result = Err(NotFound.into());
-
-    Json(Response::from_result(result))
 }

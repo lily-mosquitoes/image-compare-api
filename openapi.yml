@@ -5,17 +5,17 @@ info:
   description: Backend for image compare, a website for facilitating citizen science projects relating to imaging and mathematics.
   contact:
     email: lily.mosquitoes@gmail.com
-    
+
 servers:
   - url: http://127.0.0.1:8000
- 
+
 tags:
   - name: Healthcheck
   - name: User
   - name: Comparison
   - name: Vote
   - name: Image
-  
+
 paths:
   /api/healthcheck:
     get:
@@ -45,7 +45,6 @@ paths:
             type: string
             format: uuid
           required: true
-        - $ref: '#/components/parameters/AcceptHeader'
       responses:
         '200':
           description: User information returned
@@ -55,7 +54,7 @@ paths:
                 allOf:
                 - $ref: '#/components/schemas/DefaultProperties'
                 - type: object
-                  properties:                    
+                  properties:
                     data:
                       $ref: '#/components/schemas/User'
         '400':
@@ -66,14 +65,12 @@ paths:
                 allOf:
                 - $ref: '#/components/schemas/DefaultProperties'
                 - type: object
-                  properties:                    
+                  properties:
                     error:
                       type: string
                       example: 'ID must be UUID'
         '404':
           $ref: '#/components/responses/404_NotFound'
-        '406':
-          $ref: '#/components/responses/406_NotAcceptable'
         '500':
           $ref: '#/components/responses/500_InternalServerError'
   /api/user:
@@ -83,8 +80,6 @@ paths:
       operationId: post_user
       tags:
         - User
-      parameters:
-        - $ref: '#/components/parameters/AcceptHeader'
       responses:
         '201':
           description: User Created
@@ -97,20 +92,25 @@ paths:
                 allOf:
                 - $ref: '#/components/schemas/DefaultProperties'
                 - type: object
-                  properties:                    
+                  properties:
                     data:
                       $ref: '#/components/schemas/User'
-        '406':
-          $ref: '#/components/responses/406_NotAcceptable'
         '500':
           $ref: '#/components/responses/500_InternalServerError'
-  /api/comparison:
+  /api/user/{id}/comparison:
     get:
-      summary: get a "random" comparison
-      description: Returns a "random" comparison object
+      summary: get a new comparison for the user
+      description: Returns a comparison object the user has not voted on yet
       operationId: get_comparison
       tags:
         - Comparison
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: string
+            format: uuid
+          required: true
       responses:
         '200':
           description: Images returned for comparison; currently always 2
@@ -120,9 +120,23 @@ paths:
                 allOf:
                 - $ref: '#/components/schemas/DefaultProperties'
                 - type: object
-                  properties:                    
+                  properties:
                     data:
                       $ref: '#/components/schemas/Comparison'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/DefaultProperties'
+                - type: object
+                  properties:
+                    error:
+                      type: string
+                      example: 'ID must be UUID'
+        '404':
+          $ref: '#/components/responses/404_NotFound'
         '500':
           $ref: '#/components/responses/500_InternalServerError'
         '503':
@@ -130,12 +144,10 @@ paths:
   /api/vote:
     post:
       summary: vote on a comparison, as a user
-      description: Creates a vote of the user for a comparison
+      description: Creates a vote from the user for a comparison
       operationId: post_vote
       tags:
         - Vote
-      parameters:
-        - $ref: '#/components/parameters/AcceptHeader'
       requestBody:
         required: true
         content:
@@ -151,7 +163,7 @@ paths:
                 allOf:
                 - $ref: '#/components/schemas/DefaultProperties'
                 - type: object
-                  properties:                    
+                  properties:
                     data:
                       $ref: '#/components/schemas/Vote'
         '400':
@@ -162,12 +174,10 @@ paths:
                 allOf:
                 - $ref: '#/components/schemas/DefaultProperties'
                 - type: object
-                  properties:                    
+                  properties:
                     error:
                       type: string
                       example: 'Parameter `user_id` must be UUID'
-        '406':
-          $ref: '#/components/responses/406_NotAcceptable'
         '422':
           description: Unprocessable Entity
           content:
@@ -176,7 +186,7 @@ paths:
                 allOf:
                 - $ref: '#/components/schemas/DefaultProperties'
                 - type: object
-                  properties:                    
+                  properties:
                     error:
                       type: string
                       example: 'Parameter `user_id` must be valid User UUID'
@@ -207,22 +217,7 @@ paths:
           $ref: '#/components/responses/404_NotFound'
 
 components:
-  parameters:
-    AcceptHeader:
-      name: Accept
-      in: header
-      schema:
-        type: string
-        format: media-type
-        enum: ["*/*", "application/json"]
-      required: false
   headers:
-    Accept:
-      description: Accepted MIME type
-      schema:
-        type: string
-        format: mime-type
-        example: 'application/json'
     Location:
       description: Location of the created resource
       schema:
@@ -247,21 +242,6 @@ components:
                   error:
                     type: string
                     example: 'Resource not found'
-    406_NotAcceptable:
-      description: MIME-type Not Acceptable
-      headers:
-        Accept:
-          $ref: '#/components/headers/Accept'
-      content:
-        application/json:
-          schema:
-            allOf:
-              - $ref: '#/components/schemas/DefaultProperties'
-              - type: object
-                properties:
-                  error:
-                    type: string
-                    example: 'MIME type not acceptable; available: application/json'
     500_InternalServerError:
       description: Internal server error
       content:

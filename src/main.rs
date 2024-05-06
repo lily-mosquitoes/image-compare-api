@@ -18,11 +18,13 @@ async fn main() -> Result<(), rocket::Error> {
 
     dotenvy::dotenv().expect(".env to be present");
     let static_dir =
-        std::env::var("STATIC_DIR").expect("`STATIC_DIR to be set in .env`");
+        std::env::var("STATIC_DIR").expect("`STATIC_DIR` to be set in .env");
     let static_dir = PathBuf::from(static_dir);
 
+    let connection_options = std::env::var("DATABASE_URL")
+        .expect("`DATABASE_URL` to be set in .env");
     let connection_options =
-        SqliteConnectOptions::from_str("sqlite://sqlite.db")
+        SqliteConnectOptions::from_str(&connection_options)
             .expect("Url to be valid");
 
     let _rocket = image_compare_api::rocket(static_dir, connection_options)

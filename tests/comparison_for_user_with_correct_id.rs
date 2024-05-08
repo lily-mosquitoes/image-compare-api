@@ -18,9 +18,11 @@ use sqlx::sqlite::{
     SqliteConnectOptions,
     SqlitePoolOptions,
 };
+use uuid::Uuid;
 
 #[derive(Deserialize)]
 struct Comparison {
+    id: Uuid,
     images: Vec<Origin<'static>>,
 }
 
@@ -127,5 +129,8 @@ fn get_comparison_for_user_with_correct_id_returns_comparison_without_vote(
         .into_json::<OkResponse<Comparison>>()
         .await
         .expect("body to be present");
-    assert_eq!(body.data.images.len(), 2);
+    assert_eq!(
+        body.data.id,
+        Uuid::parse_str("7d68f7e3-afe5-4d08-9d89-e6905f152eec").unwrap()
+    );
 }

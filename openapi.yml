@@ -142,7 +142,7 @@ paths:
         '503':
           $ref: '#/components/responses/503_ServiceUnavailable'
   /api/vote:
-    post:
+    put:
       summary: vote on a comparison, as a user
       description: Creates a vote from the user for a comparison
       operationId: post_vote
@@ -157,6 +157,17 @@ paths:
       responses:
         '201':
           description: Vote Created
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/DefaultProperties'
+                - type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/Vote'
+        '200':
+          description: Vote Updated
           content:
             application/json:
               schema:
@@ -311,7 +322,7 @@ components:
         user_id:
           type: string
           format: uuid
-        vote:
+        image:
           type: string
           format: uri
           example: 'http://localhost:3000/api/images/imageA.png'

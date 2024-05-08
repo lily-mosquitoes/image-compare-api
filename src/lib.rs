@@ -57,6 +57,7 @@ pub fn rocket<P: AsRef<Path>>(
                 crate::api::comparison::handler::get_comparison_for_user,
                 crate::api::user::handler::get_user,
                 crate::api::user::handler::generate_user,
+                crate::api::vote::handler::vote,
             ],
         )
         .mount(static_dir.origin.clone(), FileServer::from(&static_dir.path))

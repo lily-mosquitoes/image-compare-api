@@ -94,10 +94,6 @@ async fn put_vote_with_incorrect_image_filename_returns_expected_error(
         .into_json::<ErrResponse<String>>()
         .await
         .expect("body to be present");
-    let expected_error = "no rows returned by a query that expected to return \
-                          at least one row"
-        .to_string();
-    // let expected_error = "`image` must be a valid image
-    // filename".to_string();
+    let expected_error = "`image` with requested name not found".to_string();
     assert_eq!(body.error, expected_error);
 }

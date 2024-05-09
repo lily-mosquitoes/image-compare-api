@@ -68,3 +68,15 @@ fn get_images_with_nonexisting_filename_is_json_err_response() {
     let body = response.into_json::<ErrResponse<String>>();
     assert!(body.is_some());
 }
+
+#[test]
+fn get_images_with_nonexisting_filename_returns_expected_error() {
+    let client = get_http_client();
+    let response = client
+        .get(uri!("/static/images/does_not_exist.png"))
+        .dispatch();
+    let body = response
+        .into_json::<ErrResponse<String>>()
+        .expect("body to exist");
+    assert_eq!(body.error, "Resource not found");
+}

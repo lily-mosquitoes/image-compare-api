@@ -66,8 +66,6 @@ fn get_user_with_incorrect_id_returns_expected_error(
         .into_json::<ErrResponse<String>>()
         .await
         .expect("body to be present");
-    let expected_error = "no rows returned by a query that expected to return \
-                          at least one row"
-        .to_string();
+    let expected_error = "`user` with requested id not found".to_string();
     assert_eq!(body.error, expected_error);
 }

@@ -9,11 +9,8 @@ use rocket_db_pools::Connection;
 
 use super::User;
 use crate::{
-    response::{
-        error::ApiError,
-        ResponseBody,
-        ToStatus,
-    },
+    api::QueryError,
+    response::ResponseBody,
     DbPool,
 };
 
@@ -21,23 +18,19 @@ use crate::{
 pub(crate) async fn get_user(
     id: Uuid,
     mut connection: Connection<DbPool>,
-) -> (Status, Json<ResponseBody<User, ApiError<sqlx::Error>>>) {
-    let result: ResponseBody<_, _> = super::get_user(id, &mut **connection)
-        .await
-        .map_err(|error| error.into())
-        .into();
-
-    (result.status(), Json(result))
+) -> (Status, Json<ResponseBody<User, QueryError>>) {
+    match super::get_user(id, &mut **connection).await {
+        Err(error) => (error.default_status(), Json(Err(error).into())),
+        Ok(user) => (Status::Ok, Json(Ok(user).into())),
+    }
 }
 
 #[post("/user")]
 pub(crate) async fn generate_user(
     mut connection: Connection<DbPool>,
-) -> (Status, Json<ResponseBody<User, ApiError<sqlx::Error>>>) {
-    let result = super::generate_user(&mut **connection).await;
-
-    match result {
-        Err(error) => (error.to_status(), Json(Err(error.into()).into())),
+) -> (Status, Json<ResponseBody<User, QueryError>>) {
+    match super::generate_user(&mut **connection).await {
+        Err(error) => (error.default_status(), Json(Err(error).into())),
         Ok(user) => (Status::Created, Json(Ok(user).into())),
     }
 }

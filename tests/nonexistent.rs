@@ -36,3 +36,13 @@ fn get_nonexistent_is_json_error_response() {
     let body = response.into_json::<ErrResponse<String>>();
     assert!(body.is_some());
 }
+
+#[test]
+fn get_nonexistent_returns_expected_error() {
+    let client = get_http_client();
+    let response = client.get(uri!("/non/existent/path")).dispatch();
+    let body = response
+        .into_json::<ErrResponse<String>>()
+        .expect("body to be present");
+    assert_eq!(body.error, "Resource not found");
+}

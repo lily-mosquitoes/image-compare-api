@@ -9,12 +9,13 @@ use sqlx::SqliteConnection;
 use uuid::Uuid;
 
 use super::{
+    QueryError,
     SqliteArray,
     SqliteUuid,
 };
 use crate::StaticDir;
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub(crate) struct Comparison<'a> {
     pub(crate) id: Uuid,
     pub(crate) images: Vec<Origin<'a>>,
@@ -29,7 +30,7 @@ async fn get_comparison_for_user(
     user_id: Uuid,
     connection: &mut SqliteConnection,
     static_dir: &State<StaticDir>,
-) -> Result<Comparison<'static>, sqlx::Error> {
+) -> Result<Comparison<'static>, QueryError> {
     let comparison = sqlx::query_as!(
         ComparisonRaw,
         "SELECT * FROM comparison WHERE id NOT IN (SELECT comparison_id FROM \
@@ -37,7 +38,13 @@ async fn get_comparison_for_user(
         user_id
     )
     .fetch_one(connection)
-    .await?;
+    .await
+    .map_err(|error| match error {
+        sqlx::Error::RowNotFound => QueryError::RowNotFound(
+            "No `comparison` available for `user`".to_string(),
+        ),
+        error => error.into(),
+    })?;
 
     let images = comparison
         .images

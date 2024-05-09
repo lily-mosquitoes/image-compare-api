@@ -6,11 +6,8 @@ use rocket_db_pools::Connection;
 
 use super::Vote;
 use crate::{
-    response::{
-        error::ApiError,
-        ResponseBody,
-        ToStatus,
-    },
+    api::QueryError,
+    response::ResponseBody,
     DbPool,
 };
 
@@ -18,18 +15,15 @@ use crate::{
 pub(crate) async fn vote(
     vote: Json<Vote>,
     mut connection: Connection<DbPool>,
-) -> (Status, Json<ResponseBody<Vote, ApiError<sqlx::Error>>>) {
+) -> (Status, Json<ResponseBody<Vote, QueryError>>) {
     let result = super::create_or_update_vote(&vote, &mut **connection).await;
 
     match result {
-        Ok((vote_existed, vote)) => match vote_existed {
-            false => (Status::Created, Json(Ok(vote).into())),
-            true => (Status::Ok, Json(Ok(vote).into())),
-        },
-        Err(sqlx::Error::RowNotFound) => (
+        Err(QueryError::RowNotFound(message)) => (
             Status::UnprocessableEntity,
-            Json(Err(sqlx::Error::RowNotFound.into()).into()),
+            Json(Err(QueryError::RowNotFound(message)).into()),
         ),
-        Err(error) => (error.to_status(), Json(Err(error.into()).into())),
+        Err(error) => (error.default_status(), Json(Err(error).into())),
+        Ok((status, vote)) => (status, Json(Ok(vote).into())),
     }
 }

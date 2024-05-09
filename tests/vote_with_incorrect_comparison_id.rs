@@ -94,9 +94,6 @@ async fn put_vote_with_incorrect_comparison_id_returns_expected_error(
         .into_json::<ErrResponse<String>>()
         .await
         .expect("body to be present");
-    let expected_error = "no rows returned by a query that expected to return \
-                          at least one row"
-        .to_string();
-    // "`comparison_id` must be a valid comparison UUID".to_string();
+    let expected_error = "`comparison` with requested id not found".to_string();
     assert_eq!(body.error, expected_error);
 }

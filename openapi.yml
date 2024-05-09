@@ -145,7 +145,7 @@ paths:
     put:
       summary: vote on a comparison, as a user
       description: Creates a vote from the user for a comparison
-      operationId: post_vote
+      operationId: put_vote
       tags:
         - Vote
       requestBody:
@@ -200,7 +200,7 @@ paths:
                   properties:
                     error:
                       type: string
-                      example: 'Parameter `user_id` must be valid User UUID'
+                      example: '`user` with requested id not found'
         '500':
           $ref: '#/components/responses/500_InternalServerError'
   /static/images/{filename}:
@@ -325,7 +325,7 @@ components:
         image:
           type: string
           format: uri
-          example: 'http://localhost:3000/api/images/imageA.png'
+          example: 'imageA.png'
     Vote:
       allOf:
       - type: object

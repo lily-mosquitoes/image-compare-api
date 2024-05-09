@@ -15,7 +15,7 @@ use crate::{
 };
 
 #[get("/user/<id>/comparison")]
-pub(crate) async fn get_comparison_for_user<'a>(
+pub(crate) async fn get_comparison_for_user(
     id: Uuid,
     mut connection: Connection<DbPool>,
     static_dir: &State<StaticDir>,

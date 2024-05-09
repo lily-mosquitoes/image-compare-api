@@ -21,11 +21,11 @@ pub(crate) struct Comparison<'a> {
     pub(crate) images: Vec<Origin<'a>>,
 }
 
-async fn get_comparison_for_user(
+async fn get_comparison_for_user<'r>(
     user_id: Uuid,
     connection: &mut SqliteConnection,
     static_dir: &State<StaticDir>,
-) -> Result<Comparison<'static>, QueryError> {
+) -> Result<Comparison<'r>, QueryError> {
     sqlx::query_as!(
         ComparisonRaw,
         "SELECT * FROM comparison WHERE id NOT IN (SELECT comparison_id FROM \
@@ -48,11 +48,11 @@ struct ComparisonRaw {
     images: SqliteArray,
 }
 
-impl Comparison<'_> {
+impl<'r> Comparison<'r> {
     fn parse_with(
         comparison_raw: ComparisonRaw,
         static_dir: &State<StaticDir>,
-    ) -> Comparison<'static> {
+    ) -> Comparison<'r> {
         let images = comparison_raw
             .images
             .iter()

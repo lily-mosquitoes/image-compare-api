@@ -21,17 +21,12 @@ pub(crate) struct Comparison<'a> {
     pub(crate) images: Vec<Origin<'a>>,
 }
 
-struct ComparisonRaw {
-    id: SqliteUuid,
-    images: SqliteArray,
-}
-
 async fn get_comparison_for_user(
     user_id: Uuid,
     connection: &mut SqliteConnection,
     static_dir: &State<StaticDir>,
 ) -> Result<Comparison<'static>, QueryError> {
-    let comparison = sqlx::query_as!(
+    sqlx::query_as!(
         ComparisonRaw,
         "SELECT * FROM comparison WHERE id NOT IN (SELECT comparison_id FROM \
          vote WHERE user_id = ?) LIMIT 1",
@@ -44,22 +39,35 @@ async fn get_comparison_for_user(
             "No `comparison` available for `user`".to_string(),
         ),
         error => error.into(),
-    })?;
-
-    let images = comparison
-        .images
-        .iter()
-        .map(|image_filename| {
-            Origin::parse_owned(format!(
-                "{}/{}",
-                static_dir.origin, image_filename
-            ))
-            .expect("BUG: image path should be parseable to origin.")
-        })
-        .collect();
-
-    Ok(Comparison {
-        id: *comparison.id,
-        images,
     })
+    .map(|comparison_raw| Comparison::parse_with(comparison_raw, static_dir))
+}
+
+struct ComparisonRaw {
+    id: SqliteUuid,
+    images: SqliteArray,
+}
+
+impl Comparison<'_> {
+    fn parse_with(
+        comparison_raw: ComparisonRaw,
+        static_dir: &State<StaticDir>,
+    ) -> Comparison<'static> {
+        let images = comparison_raw
+            .images
+            .iter()
+            .map(|image_filename| {
+                Origin::parse_owned(format!(
+                    "{}/{}",
+                    static_dir.origin, image_filename
+                ))
+                .expect("BUG: image path should be parseable to origin.")
+            })
+            .collect();
+
+        Comparison {
+            id: *comparison_raw.id,
+            images,
+        }
+    }
 }

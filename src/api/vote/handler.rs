@@ -24,6 +24,6 @@ pub(crate) async fn vote(
             Json(Err(QueryError::RowNotFound(message)).into()),
         ),
         Err(error) => (error.default_status(), Json(Err(error).into())),
-        Ok((status, vote)) => (status, Json(Ok(vote).into())),
+        Ok(vote) => (vote.status(), Json(Ok(vote).into())),
     }
 }

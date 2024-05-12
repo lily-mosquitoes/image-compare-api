@@ -110,7 +110,7 @@ async fn put_new_vote_with_correct_parameters_returns_expected_vote(
             .unwrap(),
         user_id: Uuid::parse_str("3fa85f64-5717-4562-b3fc-2c963f66afa6")
             .unwrap(),
-        image: "image%20A.png".to_string(),
+        image: "/static/images/image%20A.png".to_string(),
     };
     assert_eq!(body.data, expected_vote);
 }

@@ -32,7 +32,6 @@ pub fn rocket<P: AsRef<Path>>(
 ) -> Rocket<Build> {
     let static_dir = StaticDir {
         path: static_dir.as_ref().to_path_buf(),
-        origin: Origin::parse("/static/images").unwrap(),
     };
 
     let figment = rocket::Config::figment().merge((
@@ -60,13 +59,14 @@ pub fn rocket<P: AsRef<Path>>(
                 crate::api::vote::handler::vote,
             ],
         )
-        .mount(static_dir.origin.clone(), FileServer::from(&static_dir.path))
+        .mount(STATIC_ROUTE, FileServer::from(&static_dir.path))
         .manage(static_dir)
 }
 
+static STATIC_ROUTE: &'static str = "/static/images";
+
 pub(crate) struct StaticDir {
     pub(crate) path: PathBuf,
-    pub(crate) origin: Origin<'static>,
 }
 
 #[derive(Database)]

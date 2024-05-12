@@ -27,16 +27,10 @@ pub(crate) async fn create_or_update_vote(
 ) -> Result<(Status, Vote), QueryError> {
     let _ = super::user::get_user(*vote.user_id, connection).await?;
 
-    let image = vote
-        .image
-        .split("/")
-        .last()
-        .expect("BUG: String split should return at least one item");
-
     let image_found = get_comparison_images(*vote.comparison_id, connection)
         .await?
         .iter()
-        .any(|image_filename| image_filename == image);
+        .any(|path| *path.path() == vote.image);
 
     match (
         image_found,
@@ -53,7 +47,7 @@ pub(crate) async fn create_or_update_vote(
                  ?, ?) RETURNING *",
                 *vote.comparison_id,
                 *vote.user_id,
-                image,
+                vote.image,
             )
             .fetch_one(connection)
             .await?,
@@ -65,7 +59,7 @@ pub(crate) async fn create_or_update_vote(
                 Vote,
                 "UPDATE vote SET image = ? WHERE comparison_id = ? AND \
                  user_id = ? RETURNING *",
-                image,
+                vote.image,
                 *vote.comparison_id,
                 *vote.user_id,
             )
@@ -117,6 +111,6 @@ async fn get_comparison_images(
     .map(|comparison| comparison.images)
 }
 
-struct ComparisonImages {
-    images: SqliteArray,
+struct ComparisonImages<'a> {
+    images: SqliteArray<'a>,
 }

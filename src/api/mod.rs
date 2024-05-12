@@ -4,7 +4,10 @@ use std::{
     ops::Deref,
 };
 
-use rocket::http::Status;
+use rocket::http::{
+    uri::Origin,
+    Status,
+};
 use serde::{
     Deserialize,
     Serialize,
@@ -12,6 +15,9 @@ use serde::{
 };
 use uuid::Uuid;
 
+use crate::STATIC_ROUTE;
+
+pub(crate) mod admin;
 pub(crate) mod comparison;
 pub(crate) mod healthcheck;
 pub(crate) mod user;
@@ -39,16 +45,27 @@ impl Deref for SqliteUuid {
     }
 }
 
-pub(crate) struct SqliteArray(Vec<String>);
+#[derive(Serialize)]
+pub(crate) struct SqliteArray<'a>(Vec<Origin<'a>>);
 
-impl From<String> for SqliteArray {
+impl<'a> From<String> for SqliteArray<'a> {
     fn from(value: String) -> Self {
-        Self(value.split("/").map(str::to_string).collect())
+        Self(
+            value
+                .split("/")
+                .map(str::to_string)
+                .map(|filename| {
+                    let path = format!("{}/{}", STATIC_ROUTE, filename);
+                    Origin::parse_owned(path)
+                        .expect("BUG: path should be parseable.")
+                })
+                .collect(),
+        )
     }
 }
 
-impl Deref for SqliteArray {
-    type Target = Vec<String>;
+impl<'a> Deref for SqliteArray<'a> {
+    type Target = Vec<Origin<'a>>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -59,6 +76,7 @@ impl Deref for SqliteArray {
 pub(crate) enum QueryError {
     Sqlx(sqlx::Error),
     RowNotFound(String),
+    FileServerError(String),
 }
 
 impl From<sqlx::Error> for QueryError {
@@ -84,6 +102,7 @@ impl Display for QueryError {
         match self {
             Self::Sqlx(error) => write!(f, "{}", error),
             Self::RowNotFound(message) => write!(f, "{}", message),
+            Self::FileServerError(message) => write!(f, "{}", message),
         }
     }
 }

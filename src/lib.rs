@@ -13,10 +13,7 @@ use std::path::{
 use rocket::{
     fairing,
     fs::FileServer,
-    http::{
-        uri::Origin,
-        Header,
-    },
+    http::Header,
     Build,
     Rocket,
 };
@@ -57,6 +54,7 @@ pub fn rocket<P: AsRef<Path>>(
                 crate::api::user::handler::get_user,
                 crate::api::user::handler::generate_user,
                 crate::api::vote::handler::vote,
+                crate::api::admin::handler::generate_comparisons,
             ],
         )
         .mount(STATIC_ROUTE, FileServer::from(&static_dir.path))

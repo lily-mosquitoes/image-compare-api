@@ -8,7 +8,7 @@ rocket = { version = "=0.5", features = ["json", "uuid", "secrets"] }
 rocket_db_pools = { version = "=0.1", features = ["sqlx_sqlite"] }
 serde = { version = "=1.0.189", features = ["derive"] }
 chrono = { version = "0.4", features = ["clock", "serde"] }
-sqlx = { version = "0.7", features = ["runtime-tokio", "migrate", "sqlite", "uuid"] }
+sqlx = { version = "0.7", features = ["runtime-tokio", "migrate", "sqlite", "uuid", "chrono"] }
 uuid = { version = "1", features = ["v4"] }
 rand = "0.8"
 dotenvy = "0.15"

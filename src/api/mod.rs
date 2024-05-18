@@ -52,10 +52,10 @@ impl<'a> From<String> for SqliteArray<'a> {
     fn from(value: String) -> Self {
         Self(
             value
-                .split("/")
+                .split("///")
                 .map(str::to_string)
                 .map(|filename| {
-                    let path = format!("{}/{}", STATIC_ROUTE, filename);
+                    let path = format!("{STATIC_ROUTE}/{filename}");
                     Origin::parse_owned(path)
                         .expect("BUG: path should be parseable.")
                 })

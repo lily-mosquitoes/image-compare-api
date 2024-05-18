@@ -1,5 +1,9 @@
 pub(crate) mod handler;
 
+use chrono::{
+    DateTime,
+    Utc,
+};
 use serde::Serialize;
 use sqlx::SqliteConnection;
 use uuid::Uuid;
@@ -13,7 +17,9 @@ use super::{
 #[derive(Serialize)]
 pub(crate) struct Comparison<'a> {
     pub(crate) id: SqliteUuid,
+    pub(crate) dirname: String,
     pub(crate) images: SqliteArray<'a>,
+    pub(crate) created_at: DateTime<Utc>,
 }
 
 async fn get_comparison_for_user<'r>(
@@ -22,8 +28,9 @@ async fn get_comparison_for_user<'r>(
 ) -> Result<Comparison<'r>, QueryError> {
     sqlx::query_as!(
         Comparison,
-        "SELECT * FROM comparison WHERE id NOT IN (SELECT comparison_id FROM \
-         vote WHERE user_id = ?) LIMIT 1",
+        "SELECT id, dirname, images, created_at as \"created_at: _\" FROM \
+         comparison WHERE id NOT IN (SELECT comparison_id FROM vote WHERE \
+         user_id = ?) LIMIT 1",
         user_id
     )
     .fetch_one(connection)

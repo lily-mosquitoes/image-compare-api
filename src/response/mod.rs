@@ -33,6 +33,7 @@ impl<T, E> From<Result<T, E>> for ResponseBody<T, E> {
 #[cfg(test)]
 mod test {
     use super::ResponseBody;
+
     #[test]
     fn make_response_body_from_ok_result() {
         let result: Result<i8, u8> = Ok(-2);

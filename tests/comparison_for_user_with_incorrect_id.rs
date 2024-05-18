@@ -26,7 +26,7 @@ async fn get_http_client(db_options: SqliteConnectOptions) -> Client {
 
 #[sqlx::test(fixtures(
     path = "./../fixtures",
-    scripts("users", "comparisons")
+    scripts("admins", "users", "comparisons")
 ))]
 async fn get_comparison_for_user_with_incorrect_id_returns_404_not_found(
     _: SqlitePoolOptions,
@@ -42,7 +42,7 @@ async fn get_comparison_for_user_with_incorrect_id_returns_404_not_found(
 
 #[sqlx::test(fixtures(
     path = "./../fixtures",
-    scripts("users", "comparisons")
+    scripts("admins", "users", "comparisons")
 ))]
 async fn get_comparison_for_user_with_incorrect_id_is_json_error_response(
     _: SqlitePoolOptions,
@@ -59,7 +59,7 @@ async fn get_comparison_for_user_with_incorrect_id_is_json_error_response(
 
 #[sqlx::test(fixtures(
     path = "./../fixtures",
-    scripts("users", "comparisons")
+    scripts("admins", "users", "comparisons")
 ))]
 async fn get_comparison_for_user_with_incorrect_id_returns_expected_error(
     _: SqlitePoolOptions,

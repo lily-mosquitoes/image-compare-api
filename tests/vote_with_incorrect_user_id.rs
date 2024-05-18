@@ -30,7 +30,7 @@ async fn get_http_client(db_options: SqliteConnectOptions) -> Client {
 
 #[sqlx::test(fixtures(
     path = "./../fixtures",
-    scripts("users", "comparisons", "votes")
+    scripts("admins", "users", "comparisons", "votes")
 ))]
 async fn put_vote_with_incorrect_user_id_returns_422_unprocessable_entity(
     _: SqlitePoolOptions,
@@ -51,7 +51,7 @@ async fn put_vote_with_incorrect_user_id_returns_422_unprocessable_entity(
 
 #[sqlx::test(fixtures(
     path = "./../fixtures",
-    scripts("users", "comparisons", "votes")
+    scripts("admins", "users", "comparisons", "votes")
 ))]
 async fn put_vote_with_incorrect_user_id_is_json_err_response(
     _: SqlitePoolOptions,
@@ -73,7 +73,7 @@ async fn put_vote_with_incorrect_user_id_is_json_err_response(
 
 #[sqlx::test(fixtures(
     path = "./../fixtures",
-    scripts("users", "comparisons", "votes")
+    scripts("admins", "users", "comparisons", "votes")
 ))]
 async fn put_vote_with_incorrect_user_id_returns_expected_error(
     _: SqlitePoolOptions,

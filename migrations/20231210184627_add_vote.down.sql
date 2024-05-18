@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS vote;
+DROP TABLE vote;

@@ -26,7 +26,7 @@ async fn get_http_client(db_options: SqliteConnectOptions) -> Client {
 
 #[sqlx::test(fixtures(
     path = "./../fixtures",
-    scripts("users", "comparisons", "votes")
+    scripts("admins", "users", "comparisons", "votes")
 ))]
 async fn get_comparison_for_user_when_none_available_returns_503_service_unavailable(
     _: SqlitePoolOptions,
@@ -42,7 +42,7 @@ async fn get_comparison_for_user_when_none_available_returns_503_service_unavail
 
 #[sqlx::test(fixtures(
     path = "./../fixtures",
-    scripts("users", "comparisons", "votes")
+    scripts("admins", "users", "comparisons", "votes")
 ))]
 async fn get_comparison_for_user_when_none_available_is_json_err_response(
     _: SqlitePoolOptions,
@@ -59,7 +59,7 @@ async fn get_comparison_for_user_when_none_available_is_json_err_response(
 
 #[sqlx::test(fixtures(
     path = "./../fixtures",
-    scripts("users", "comparisons", "votes")
+    scripts("admins", "users", "comparisons", "votes")
 ))]
 async fn get_comparison_for_user_when_none_available_returns_expected_error(
     _: SqlitePoolOptions,

@@ -2,10 +2,6 @@ mod common;
 
 use std::path::PathBuf;
 
-use chrono::{
-    DateTime,
-    Utc,
-};
 use common::OkResponse;
 use image_compare_api;
 use rocket::{
@@ -23,7 +19,6 @@ use sqlx::sqlite::{
     SqliteConnectOptions,
     SqlitePoolOptions,
 };
-use uuid::Uuid;
 
 #[derive(Debug, PartialEq, Deserialize)]
 struct Comparison {

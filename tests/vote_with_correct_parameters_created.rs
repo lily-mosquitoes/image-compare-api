@@ -41,7 +41,7 @@ struct Vote {
 
 #[sqlx::test(fixtures(
     path = "./../fixtures",
-    scripts("users", "comparisons", "votes")
+    scripts("admins", "users", "comparisons", "votes")
 ))]
 async fn put_new_vote_with_correct_parameters_returns_201_created(
     _: SqlitePoolOptions,
@@ -62,7 +62,7 @@ async fn put_new_vote_with_correct_parameters_returns_201_created(
 
 #[sqlx::test(fixtures(
     path = "./../fixtures",
-    scripts("users", "comparisons", "votes")
+    scripts("admins", "users", "comparisons", "votes")
 ))]
 async fn put_new_vote_with_correct_parameters_is_json_ok_response(
     _: SqlitePoolOptions,
@@ -84,7 +84,7 @@ async fn put_new_vote_with_correct_parameters_is_json_ok_response(
 
 #[sqlx::test(fixtures(
     path = "./../fixtures",
-    scripts("users", "comparisons", "votes")
+    scripts("admins", "users", "comparisons", "votes")
 ))]
 async fn put_new_vote_with_correct_parameters_returns_expected_vote(
     _: SqlitePoolOptions,

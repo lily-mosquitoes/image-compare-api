@@ -22,18 +22,18 @@ pub(crate) async fn get_admin(
     key: &str,
     connection: &mut SqliteConnection,
 ) -> Result<Admin, QueryError> {
-    sqlx::query_as!(Admin, "SELECT * FROM admin WHERE key = ?", key)
+    sqlx::query_as!(Admin, "SELECT id FROM admin WHERE key = ?", key)
         .fetch_one(connection)
         .await
         .map_err(|error| error.into())
 }
 
 pub(crate) struct Admin {
-    pub(crate) id: Option<i64>,
-    pub(crate) key: String,
+    pub(crate) id: i64,
 }
 
 pub(crate) async fn generate_comparisons_from_static_dir<'r>(
+    admin: &Admin,
     static_dir: &State<StaticDir>,
     connection: &mut SqliteConnection,
 ) -> Result<Vec<Comparison<'r>>, QueryError> {
@@ -67,6 +67,7 @@ pub(crate) async fn generate_comparisons_from_static_dir<'r>(
                 let comparison_ab = create_comparison(
                     &format!("{}///{}", files[a], files[b]),
                     dirname,
+                    admin,
                     connection,
                 )
                 .await?;
@@ -75,6 +76,7 @@ pub(crate) async fn generate_comparisons_from_static_dir<'r>(
                 let comparison_ba = create_comparison(
                     &format!("{}///{}", files[b], files[a]),
                     dirname,
+                    admin,
                     connection,
                 )
                 .await?;
@@ -89,18 +91,20 @@ pub(crate) async fn generate_comparisons_from_static_dir<'r>(
 async fn create_comparison<'r>(
     images: &str,
     dirname: &str,
+    admin: &Admin,
     connection: &mut SqliteConnection,
 ) -> Result<Comparison<'r>, QueryError> {
     let id = generate_new_comparison_id(connection).await?;
 
     sqlx::query_as!(
         Comparison,
-        "INSERT INTO comparison (id, dirname, images) VALUES (?, ?, ?) ON \
-         CONFLICT DO UPDATE SET images=images RETURNING id, dirname, images, \
-         created_at as \"created_at: _\"",
+        "INSERT INTO comparison (id, dirname, images, created_by) VALUES (?, \
+         ?, ?, ?) ON CONFLICT DO UPDATE SET images=images RETURNING id, \
+         dirname, images, created_at as \"created_at: _\", created_by",
         id,
         dirname,
-        images
+        images,
+        admin.id
     )
     .fetch_one(connection)
     .await

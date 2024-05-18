@@ -37,7 +37,7 @@ async fn get_http_client(db_options: SqliteConnectOptions) -> Client {
 
 #[sqlx::test(fixtures(
     path = "./../fixtures",
-    scripts("users", "comparisons")
+    scripts("admins", "users", "comparisons")
 ))]
 async fn get_comparison_for_user_with_correct_id_returns_200_ok(
     _: SqlitePoolOptions,
@@ -53,7 +53,7 @@ async fn get_comparison_for_user_with_correct_id_returns_200_ok(
 
 #[sqlx::test(fixtures(
     path = "./../fixtures",
-    scripts("users", "comparisons")
+    scripts("admins", "users", "comparisons")
 ))]
 async fn get_comparison_for_user_with_correct_id_is_json_ok_response(
     _: SqlitePoolOptions,
@@ -70,7 +70,7 @@ async fn get_comparison_for_user_with_correct_id_is_json_ok_response(
 
 #[sqlx::test(fixtures(
     path = "./../fixtures",
-    scripts("users", "comparisons")
+    scripts("admins", "users", "comparisons")
 ))]
 fn get_comparison_for_user_with_correct_id_returns_2_images(
     _: SqlitePoolOptions,
@@ -90,7 +90,7 @@ fn get_comparison_for_user_with_correct_id_returns_2_images(
 
 #[sqlx::test(fixtures(
     path = "./../fixtures",
-    scripts("users", "comparisons")
+    scripts("admins", "users", "comparisons")
 ))]
 fn get_comparison_for_user_with_correct_id_returns_images_with_valid_origin(
     _: SqlitePoolOptions,
@@ -113,7 +113,7 @@ fn get_comparison_for_user_with_correct_id_returns_images_with_valid_origin(
 
 #[sqlx::test(fixtures(
     path = "./../fixtures",
-    scripts("users", "comparisons", "votes")
+    scripts("admins", "users", "comparisons", "votes")
 ))]
 fn get_comparison_for_user_with_correct_id_returns_comparison_without_vote(
     _: SqlitePoolOptions,

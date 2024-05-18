@@ -28,10 +28,11 @@ use crate::{
 #[post("/admin/comparison")]
 pub(crate) async fn generate_comparisons<'r>(
     static_dir: &State<StaticDir>,
-    _admin: Admin,
+    admin: Admin,
     mut connection: Connection<DbPool>,
 ) -> (Status, Json<ResponseBody<Vec<Comparison<'r>>, QueryError>>) {
     let comparisons = super::generate_comparisons_from_static_dir(
+        &admin,
         static_dir,
         &mut **connection,
     )

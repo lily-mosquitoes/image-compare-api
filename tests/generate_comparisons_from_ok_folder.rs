@@ -24,6 +24,7 @@ use sqlx::sqlite::{
 struct Comparison {
     dirname: String,
     images: Vec<Origin<'static>>,
+    created_by: i64,
 }
 
 static STATIC_DIR: &'static str = relative!("tests/static_dir/ok");
@@ -97,6 +98,7 @@ async fn generate_comparisons_from_ok_folder_returns_expected_comparisons(
                 uri!("/static/images/image%20A.png"),
                 uri!("/static/images/image%20B.png"),
             ],
+            created_by: 1,
         },
         Comparison {
             dirname: "".to_string(),
@@ -104,6 +106,7 @@ async fn generate_comparisons_from_ok_folder_returns_expected_comparisons(
                 uri!("/static/images/image%20B.png"),
                 uri!("/static/images/image%20A.png"),
             ],
+            created_by: 1,
         },
         // folder_a comparisons (12, 21, 13, 31, 23, 32)
         Comparison {
@@ -112,6 +115,7 @@ async fn generate_comparisons_from_ok_folder_returns_expected_comparisons(
                 uri!("/static/images/folder_a/image%201.png"),
                 uri!("/static/images/folder_a/image%202.png"),
             ],
+            created_by: 1,
         },
         Comparison {
             dirname: "folder_a".to_string(),
@@ -119,6 +123,7 @@ async fn generate_comparisons_from_ok_folder_returns_expected_comparisons(
                 uri!("/static/images/folder_a/image%202.png"),
                 uri!("/static/images/folder_a/image%201.png"),
             ],
+            created_by: 1,
         },
         Comparison {
             dirname: "folder_a".to_string(),
@@ -126,6 +131,7 @@ async fn generate_comparisons_from_ok_folder_returns_expected_comparisons(
                 uri!("/static/images/folder_a/image%201.png"),
                 uri!("/static/images/folder_a/image%203.png"),
             ],
+            created_by: 1,
         },
         Comparison {
             dirname: "folder_a".to_string(),
@@ -133,6 +139,7 @@ async fn generate_comparisons_from_ok_folder_returns_expected_comparisons(
                 uri!("/static/images/folder_a/image%203.png"),
                 uri!("/static/images/folder_a/image%201.png"),
             ],
+            created_by: 1,
         },
         Comparison {
             dirname: "folder_a".to_string(),
@@ -140,6 +147,7 @@ async fn generate_comparisons_from_ok_folder_returns_expected_comparisons(
                 uri!("/static/images/folder_a/image%202.png"),
                 uri!("/static/images/folder_a/image%203.png"),
             ],
+            created_by: 1,
         },
         Comparison {
             dirname: "folder_a".to_string(),
@@ -147,6 +155,7 @@ async fn generate_comparisons_from_ok_folder_returns_expected_comparisons(
                 uri!("/static/images/folder_a/image%203.png"),
                 uri!("/static/images/folder_a/image%202.png"),
             ],
+            created_by: 1,
         },
         // folder_b/folder_c comparisons (45, 54)
         Comparison {
@@ -155,6 +164,7 @@ async fn generate_comparisons_from_ok_folder_returns_expected_comparisons(
                 uri!("/static/images/folder_b/folder_c/image%204.png"),
                 uri!("/static/images/folder_b/folder_c/image%205.png"),
             ],
+            created_by: 1,
         },
         Comparison {
             dirname: "folder_b/folder_c".to_string(),
@@ -162,6 +172,7 @@ async fn generate_comparisons_from_ok_folder_returns_expected_comparisons(
                 uri!("/static/images/folder_b/folder_c/image%205.png"),
                 uri!("/static/images/folder_b/folder_c/image%204.png"),
             ],
+            created_by: 1,
         },
     ];
 

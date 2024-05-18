@@ -15,8 +15,7 @@ use sqlx::sqlite::{
     SqlitePoolOptions,
 };
 
-static STATIC_DIR: &'static str =
-    relative!("tests/test_static_dirs/with_2_files");
+static STATIC_DIR: &'static str = relative!("tests/static_dir/ok");
 
 async fn get_http_client(db_options: SqliteConnectOptions) -> Client {
     let static_dir = PathBuf::from(STATIC_DIR);

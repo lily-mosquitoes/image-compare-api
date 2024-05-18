@@ -171,18 +171,13 @@ fn read_dir_files(
 
 #[cfg(test)]
 mod test {
-    use std::{
-        path::PathBuf,
-        str::FromStr,
-    };
+    use std::path::PathBuf;
 
     use rocket::fs::relative;
 
     #[test]
     fn read_dir_files_returns_expected_paths() {
-        let path = PathBuf::from(relative!(
-            "tests/test_static_dirs/with_subfolders_ok"
-        ));
+        let path = PathBuf::from(relative!("tests/static_dir/ok"));
 
         let mut files = super::read_dir_files(&path, "".to_string())
             .expect("Dir to be readable");

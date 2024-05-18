@@ -45,7 +45,13 @@ pub fn rocket<P: AsRef<Path>>(
     rocket::custom(figment)
         .attach(CORS)
         .attach(DbPool::init())
-        .register("/", catchers![crate::catchers::not_found])
+        .register(
+            "/",
+            catchers![
+                crate::catchers::not_found,
+                crate::catchers::unauthorized
+            ],
+        )
         .mount(
             "/api",
             routes![

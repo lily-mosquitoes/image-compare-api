@@ -58,7 +58,7 @@ pub(crate) async fn generate_comparisons_from_static_dir<'r>(
     for (dirname, files) in &files_by_dirname {
         if files.len() < 2 {
             return Err(QueryError::FileServerError(format!(
-                "Not enough files in STATIC_DIR {dirname} (minimum 2 needed)"
+                "Not enough files in STATIC_DIR/{dirname} (minimum 2 needed)"
             )));
         }
 

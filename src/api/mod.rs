@@ -1,12 +1,29 @@
+pub(crate) mod admin;
+pub(crate) mod comparison;
+pub(crate) mod healthcheck;
+pub(crate) mod user;
+pub(crate) mod vote;
+
 use std::{
     error::Error,
     fmt::Display,
     ops::Deref,
+    sync::atomic::{
+        AtomicUsize,
+        Ordering,
+    },
 };
 
-use rocket::http::{
-    uri::Origin,
-    Status,
+use rocket::{
+    http::{
+        uri::Origin,
+        Status,
+    },
+    request::{
+        FromRequest,
+        Outcome,
+    },
+    Request,
 };
 use serde::{
     Deserialize,
@@ -17,11 +34,23 @@ use uuid::Uuid;
 
 use crate::STATIC_ROUTE;
 
-pub(crate) mod admin;
-pub(crate) mod comparison;
-pub(crate) mod healthcheck;
-pub(crate) mod user;
-pub(crate) mod vote;
+#[derive(Debug, Copy, Clone, Serialize)]
+pub(crate) struct RequestId(pub(crate) usize);
+
+#[rocket::async_trait]
+impl<'r> FromRequest<'r> for &'r RequestId {
+    type Error = std::convert::Infallible;
+
+    async fn from_request(
+        request: &'r Request<'_>,
+    ) -> Outcome<Self, Self::Error> {
+        Outcome::Success(request.local_cache(|| {
+            RequestId(REQUEST_ID_COUNTER.fetch_add(1, Ordering::Relaxed))
+        }))
+    }
+}
+
+static REQUEST_ID_COUNTER: AtomicUsize = AtomicUsize::new(0);
 
 #[derive(Clone, Serialize, Deserialize)]
 pub(crate) struct SqliteUuid(Uuid);
@@ -90,10 +119,7 @@ impl Serialize for QueryError {
     where
         S: Serializer,
     {
-        println!("SERIALIZING");
-        let s = serializer.serialize_str(&self.to_string());
-        println!("DONE");
-        s
+        serializer.serialize_str(&self.to_string())
     }
 }
 

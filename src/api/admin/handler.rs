@@ -19,7 +19,10 @@ use super::{
     Comparison,
 };
 use crate::{
-    api::QueryError,
+    api::{
+        QueryError,
+        RequestId,
+    },
     response::ResponseBody,
     DbPool,
     StaticDir,
@@ -27,8 +30,9 @@ use crate::{
 
 #[post("/admin/comparison")]
 pub(crate) async fn generate_comparisons<'r>(
-    static_dir: &State<StaticDir>,
     admin: Admin,
+    request_id: &RequestId,
+    static_dir: &State<StaticDir>,
     mut connection: Connection<DbPool>,
 ) -> (Status, Json<ResponseBody<Vec<Comparison<'r>>, QueryError>>) {
     let comparisons = super::generate_comparisons_from_static_dir(
@@ -39,8 +43,12 @@ pub(crate) async fn generate_comparisons<'r>(
     .await;
 
     match comparisons {
-        Err(error) => (error.default_status(), Json(Err(error).into())),
-        Ok(comparisons) => (Status::Created, Json(Ok(comparisons).into())),
+        Err(error) => {
+            (error.default_status(), Json((request_id, Err(error)).into()))
+        },
+        Ok(comparisons) => {
+            (Status::Created, Json((request_id, Ok(comparisons)).into()))
+        },
     }
 }
 

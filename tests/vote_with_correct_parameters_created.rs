@@ -1,13 +1,8 @@
 mod common;
 
-use std::path::PathBuf;
-
-use common::OkResponse;
-use image_compare_api;
 use rocket::{
     fs::relative,
     http::Status,
-    local::asynchronous::Client,
     serde::{
         json::json,
         uuid::Uuid,
@@ -15,22 +10,17 @@ use rocket::{
     uri,
 };
 use serde::Deserialize;
-use sqlx::{
-    self,
-    sqlite::{
-        SqliteConnectOptions,
-        SqlitePoolOptions,
-    },
+use sqlx::sqlite::{
+    SqliteConnectOptions,
+    SqlitePoolOptions,
+};
+
+use crate::common::{
+    get_asynchronous_api_client,
+    OkResponse,
 };
 
 static STATIC_DIR: &'static str = relative!("tests/static_dir/ok");
-
-async fn get_http_client(db_options: SqliteConnectOptions) -> Client {
-    let static_dir = PathBuf::from(STATIC_DIR);
-    Client::untracked(image_compare_api::rocket(static_dir, db_options))
-        .await
-        .expect("valid rocket instance")
-}
 
 #[derive(Debug, PartialEq, Deserialize)]
 struct Vote {
@@ -47,7 +37,8 @@ async fn put_new_vote_with_correct_parameters_returns_201_created(
     _: SqlitePoolOptions,
     db_options: SqliteConnectOptions,
 ) {
-    let client = get_http_client(db_options).await;
+    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
+
     let response = client
         .put(uri!("/api/vote"))
         .json(&json!({
@@ -57,6 +48,7 @@ async fn put_new_vote_with_correct_parameters_returns_201_created(
         }))
         .dispatch()
         .await;
+
     assert_eq!(response.status(), Status::Created);
 }
 
@@ -68,8 +60,9 @@ async fn put_new_vote_with_correct_parameters_is_json_ok_response(
     _: SqlitePoolOptions,
     db_options: SqliteConnectOptions,
 ) {
-    let client = get_http_client(db_options).await;
-    let response = client
+    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
+
+    let body = client
         .put(uri!("/api/vote"))
         .json(&json!({
             "comparison_id": "7d68f7e3-afe5-4d08-9d89-e6905f152eec",
@@ -77,8 +70,10 @@ async fn put_new_vote_with_correct_parameters_is_json_ok_response(
             "image": "/static/images/image%20A.png",
         }))
         .dispatch()
+        .await
+        .into_json::<OkResponse<Vote>>()
         .await;
-    let body = response.into_json::<OkResponse<Vote>>().await;
+
     assert!(body.is_some());
 }
 
@@ -90,8 +85,9 @@ async fn put_new_vote_with_correct_parameters_returns_expected_vote(
     _: SqlitePoolOptions,
     db_options: SqliteConnectOptions,
 ) {
-    let client = get_http_client(db_options).await;
-    let response = client
+    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
+
+    let body = client
         .put(uri!("/api/vote"))
         .json(&json!({
             "comparison_id": "7d68f7e3-afe5-4d08-9d89-e6905f152eec",
@@ -99,11 +95,11 @@ async fn put_new_vote_with_correct_parameters_returns_expected_vote(
             "image": "/static/images/image%20A.png",
         }))
         .dispatch()
-        .await;
-    let body = response
+        .await
         .into_json::<OkResponse<Vote>>()
         .await
         .expect("body to be present");
+
     let expected_vote = Vote {
         comparison_id: Uuid::parse_str("7d68f7e3-afe5-4d08-9d89-e6905f152eec")
             .unwrap(),
@@ -111,5 +107,6 @@ async fn put_new_vote_with_correct_parameters_returns_expected_vote(
             .unwrap(),
         image: "/static/images/image%20A.png".to_string(),
     };
+
     assert_eq!(body.data, expected_vote);
 }

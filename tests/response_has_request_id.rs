@@ -2,7 +2,6 @@ mod common;
 
 use rocket::{
     fs::relative,
-    http::Status,
     uri,
 };
 use sqlx::sqlite::SqliteConnectOptions;
@@ -10,27 +9,33 @@ use sqlx::sqlite::SqliteConnectOptions;
 use crate::common::{
     get_asynchronous_api_client,
     ErrResponse,
+    OkResponse,
 };
 
 static STATIC_DIR: &'static str = relative!("tests/static_dir/ok");
 
 #[sqlx::test]
-async fn get_nonexistent_returns_404_not_found() {
-    let db_options = SqliteConnectOptions::new();
-    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
-
-    let response = client.get(uri!("/non/existent/path")).dispatch().await;
-
-    assert_eq!(response.status(), Status::NotFound);
-}
-
-#[sqlx::test]
-async fn get_nonexistent_is_json_error_response() {
+async fn json_ok_response_has_request_id() {
     let db_options = SqliteConnectOptions::new();
     let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
 
     let body = client
-        .get(uri!("/non/existent/path"))
+        .get(uri!("/api/healthcheck"))
+        .dispatch()
+        .await
+        .into_json::<OkResponse<()>>()
+        .await;
+
+    assert!(body.is_some());
+}
+
+#[sqlx::test]
+async fn json_err_response_has_request_id() {
+    let db_options = SqliteConnectOptions::new();
+    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
+
+    let body = client
+        .get(uri!("/api/does_not_exist"))
         .dispatch()
         .await
         .into_json::<ErrResponse<String>>()
@@ -40,11 +45,19 @@ async fn get_nonexistent_is_json_error_response() {
 }
 
 #[sqlx::test]
-async fn get_nonexistent_returns_expected_error() {
+async fn different_requests_have_different_request_ids() {
     let db_options = SqliteConnectOptions::new();
     let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
 
-    let body = client
+    let body_0 = client
+        .get(uri!("/api/healthcheck"))
+        .dispatch()
+        .await
+        .into_json::<OkResponse<()>>()
+        .await
+        .expect("body to be present");
+
+    let body_1 = client
         .get(uri!("/non/existent/path"))
         .dispatch()
         .await
@@ -52,5 +65,5 @@ async fn get_nonexistent_returns_expected_error() {
         .await
         .expect("body to be present");
 
-    assert_eq!(body.error, "Resource not found");
+    assert_ne!(body_0.request_id, body_1.request_id);
 }

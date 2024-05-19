@@ -1,9 +1,5 @@
 mod common;
 
-use std::path::PathBuf;
-
-use common::OkResponse;
-use image_compare_api;
 use rocket::{
     fs::relative,
     http::{
@@ -11,13 +7,17 @@ use rocket::{
         Header,
         Status,
     },
-    local::asynchronous::Client,
     uri,
 };
 use serde::Deserialize;
 use sqlx::sqlite::{
     SqliteConnectOptions,
     SqlitePoolOptions,
+};
+
+use crate::common::{
+    get_asynchronous_api_client,
+    OkResponse,
 };
 
 #[derive(Debug, PartialEq, Deserialize)]
@@ -29,19 +29,13 @@ struct Comparison {
 
 static STATIC_DIR: &'static str = relative!("tests/static_dir/ok");
 
-async fn get_http_client(db_options: SqliteConnectOptions) -> Client {
-    let static_dir = PathBuf::from(STATIC_DIR);
-    Client::untracked(image_compare_api::rocket(static_dir, db_options))
-        .await
-        .expect("valid rocket instance")
-}
-
 #[sqlx::test(fixtures(path = "./../fixtures", scripts("admins")))]
 async fn generate_comparisons_from_ok_folder_returns_200_ok(
     _: SqlitePoolOptions,
     db_options: SqliteConnectOptions,
 ) {
-    let client = get_http_client(db_options).await;
+    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
+
     let response = client
         .post(uri!("/api/admin/comparison"))
         .header(Header::new(
@@ -50,6 +44,7 @@ async fn generate_comparisons_from_ok_folder_returns_200_ok(
         ))
         .dispatch()
         .await;
+
     assert_eq!(response.status(), Status::Created);
 }
 
@@ -58,16 +53,19 @@ async fn generate_comparisons_from_ok_folder_is_json_ok_response(
     _: SqlitePoolOptions,
     db_options: SqliteConnectOptions,
 ) {
-    let client = get_http_client(db_options).await;
-    let response = client
+    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
+
+    let body = client
         .post(uri!("/api/admin/comparison"))
         .header(Header::new(
             "Authorization",
             "Bearer ef8a53f0b0cb43dd764fe16a442752d6",
         ))
         .dispatch()
+        .await
+        .into_json::<OkResponse<Vec<Comparison>>>()
         .await;
-    let body = response.into_json::<OkResponse<Vec<Comparison>>>().await;
+
     assert!(body.is_some());
 }
 
@@ -76,16 +74,16 @@ async fn generate_comparisons_from_ok_folder_returns_expected_comparisons(
     _: SqlitePoolOptions,
     db_options: SqliteConnectOptions,
 ) {
-    let client = get_http_client(db_options).await;
-    let response = client
+    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
+
+    let body = client
         .post(uri!("/api/admin/comparison"))
         .header(Header::new(
             "Authorization",
             "Bearer ef8a53f0b0cb43dd764fe16a442752d6",
         ))
         .dispatch()
-        .await;
-    let body = response
+        .await
         .into_json::<OkResponse<Vec<Comparison>>>()
         .await
         .expect("body to be present");
@@ -184,22 +182,24 @@ async fn generate_comparisons_from_ok_folder_returns_images_with_valid_origin(
     _: SqlitePoolOptions,
     db_options: SqliteConnectOptions,
 ) {
-    let client = get_http_client(db_options).await;
-    let response = client
+    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
+
+    let body = client
         .post(uri!("/api/admin/comparison"))
         .header(Header::new(
             "Authorization",
             "Bearer ef8a53f0b0cb43dd764fe16a442752d6",
         ))
         .dispatch()
-        .await;
-    let body = response
+        .await
         .into_json::<OkResponse<Vec<Comparison>>>()
         .await
         .expect("body to be present");
+
     for comparison in body.data {
         for image in comparison.images {
             let response = client.get(image).dispatch().await;
+
             assert_eq!(response.status(), Status::Ok);
         }
     }

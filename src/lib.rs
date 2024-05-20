@@ -45,6 +45,7 @@ pub fn rocket<P: AsRef<Path>>(
     rocket::custom(figment)
         .attach(CORS)
         .attach(DbPool::init())
+        .attach(DbMigrations)
         .register(
             "/",
             catchers![
@@ -77,6 +78,32 @@ pub(crate) struct StaticDir {
 #[database("main")]
 pub(crate) struct DbPool(sqlx::SqlitePool);
 
+struct DbMigrations;
+
+#[rocket::async_trait]
+impl fairing::Fairing for DbMigrations {
+    fn info(&self) -> fairing::Info {
+        fairing::Info {
+            name: "SQLX Migrations",
+            kind: fairing::Kind::Ignite,
+        }
+    }
+
+    async fn on_ignite(&self, rocket: Rocket<Build>) -> fairing::Result {
+        if let Some(connection) = DbPool::fetch(&rocket) {
+            match sqlx::migrate!().run(&**connection).await {
+                Ok(_) => Ok(rocket),
+                Err(error) => {
+                    error!("Migrations failed: {error}");
+                    Err(rocket)
+                },
+            }
+        } else {
+            Err(rocket)
+        }
+    }
+}
+
 struct CORS;
 
 #[rocket::async_trait]
@@ -95,7 +122,7 @@ impl fairing::Fairing for CORS {
     ) {
         response.set_header(Header::new(
             "Access-Control-Allow-Origin",
-            "http://127.0.0.1:9000",
+            "http://127.0.0.1:8000",
         ));
     }
 }

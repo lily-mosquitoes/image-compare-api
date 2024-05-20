@@ -17,6 +17,10 @@ async fn main() -> Result<(), rocket::Error> {
     }
 
     dotenvy::dotenv().expect(".env to be present");
+
+    let allowed_origin = std::env::var("ALLOWED_ORIGIN")
+        .expect("`ALLOWED_ORIGIN` to be set in .env");
+
     let static_dir =
         std::env::var("STATIC_DIR").expect("`STATIC_DIR` to be set in .env");
     let static_dir = PathBuf::from(static_dir);
@@ -27,11 +31,15 @@ async fn main() -> Result<(), rocket::Error> {
         SqliteConnectOptions::from_str(&connection_options)
             .expect("Url to be valid");
 
-    let _rocket = image_compare_api::rocket(static_dir, connection_options)
-        .ignite()
-        .await?
-        .launch()
-        .await?;
+    let _rocket = image_compare_api::rocket(
+        allowed_origin,
+        static_dir,
+        connection_options,
+    )
+    .ignite()
+    .await?
+    .launch()
+    .await?;
 
     Ok(())
 }

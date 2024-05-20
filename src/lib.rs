@@ -23,10 +23,13 @@ use sqlx::{
     ConnectOptions,
 };
 
-pub fn rocket<P: AsRef<Path>>(
+pub fn rocket<S: Into<String>, P: AsRef<Path>>(
+    allowed_origin: S,
     static_dir: P,
     connection_options: SqliteConnectOptions,
 ) -> Rocket<Build> {
+    let allowed_origin = allowed_origin.into();
+
     let static_dir = StaticDir {
         path: static_dir.as_ref().to_path_buf(),
     };
@@ -43,7 +46,7 @@ pub fn rocket<P: AsRef<Path>>(
     ));
 
     rocket::custom(figment)
-        .attach(CORS)
+        .attach(CORS { allowed_origin })
         .attach(DbPool::init())
         .attach(DbMigrations)
         .register(
@@ -104,7 +107,9 @@ impl fairing::Fairing for DbMigrations {
     }
 }
 
-struct CORS;
+struct CORS {
+    allowed_origin: String,
+}
 
 #[rocket::async_trait]
 impl fairing::Fairing for CORS {
@@ -122,7 +127,7 @@ impl fairing::Fairing for CORS {
     ) {
         response.set_header(Header::new(
             "Access-Control-Allow-Origin",
-            "http://127.0.0.1:8000",
+            self.allowed_origin.clone(),
         ));
     }
 }

@@ -28,7 +28,7 @@ pub(crate) async fn get_asynchronous_api_client<P: AsRef<Path>>(
     db_options: SqliteConnectOptions,
 ) -> asynchronous::Client {
     asynchronous::Client::untracked(image_compare_api::rocket(
-        static_dir, db_options,
+        "*", static_dir, db_options,
     ))
     .await
     .expect("valid rocket instance")

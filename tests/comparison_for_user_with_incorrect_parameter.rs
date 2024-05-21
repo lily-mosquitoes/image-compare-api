@@ -17,27 +17,36 @@ use crate::common::{
 
 static STATIC_DIR: &'static str = relative!("tests/static_dir/ok");
 
-#[sqlx::test(fixtures(path = "./../fixtures", scripts("users")))]
-async fn get_user_with_incorrect_id_returns_404_not_found(
+#[sqlx::test(fixtures(
+    path = "./../fixtures",
+    scripts("admins", "users", "comparisons")
+))]
+async fn get_comparison_for_user_with_incorrect_parameter_returns_422_unprocessable_entity(
     _: SqlitePoolOptions,
     db_options: SqliteConnectOptions,
 ) {
     let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
 
-    let response = client.get(uri!("/api/user/not-a-uuid")).dispatch().await;
+    let response = client
+        .get(uri!("/api/user/not-a-uuid/comparison"))
+        .dispatch()
+        .await;
 
     assert_eq!(response.status(), Status::UnprocessableEntity);
 }
 
-#[sqlx::test(fixtures(path = "./../fixtures", scripts("users")))]
-fn get_user_with_incorrect_id_is_json_err_response(
+#[sqlx::test(fixtures(
+    path = "./../fixtures",
+    scripts("admins", "users", "comparisons")
+))]
+async fn get_comparison_for_user_with_incorrect_parameter_is_json_error_response(
     _: SqlitePoolOptions,
     db_options: SqliteConnectOptions,
 ) {
     let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
 
     let body = client
-        .get(uri!("/api/user/not-a-uuid"))
+        .get(uri!("/api/user/not-a-uuid/comparison"))
         .dispatch()
         .await
         .into_json::<ErrResponse<String>>()
@@ -46,20 +55,26 @@ fn get_user_with_incorrect_id_is_json_err_response(
     assert!(body.is_some());
 }
 
-#[sqlx::test(fixtures(path = "./../fixtures", scripts("users")))]
-fn get_user_with_incorrect_id_returns_expected_error(
+#[sqlx::test(fixtures(
+    path = "./../fixtures",
+    scripts("admins", "users", "comparisons")
+))]
+async fn get_comparison_for_user_with_incorrect_parameter_returns_expected_error(
     _: SqlitePoolOptions,
     db_options: SqliteConnectOptions,
 ) {
     let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
 
     let body = client
-        .get(uri!("/api/user/not-a-uuid"))
+        .get(uri!("/api/user/not-a-uuid/comparison"))
         .dispatch()
         .await
         .into_json::<ErrResponse<String>>()
         .await
-        .expect("body to be present");
+        .expect("body to exist");
 
-    assert_eq!(body.error, "Semantic error in request: /api/user/not-a-uuid");
+    assert_eq!(
+        body.error,
+        "Semantic error in request: /api/user/not-a-uuid/comparison"
+    );
 }

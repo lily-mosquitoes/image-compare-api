@@ -1,5 +1,8 @@
 use rocket::{
-    http::Header,
+    http::{
+        Header,
+        Status,
+    },
     serde::json::Json,
     Request,
 };
@@ -8,6 +11,35 @@ use crate::{
     api::RequestId,
     response::ResponseBody,
 };
+
+#[catch(default)]
+pub(crate) async fn default(
+    status: Status,
+    request: &Request<'_>,
+) -> (Status, Json<ResponseBody<(), String>>) {
+    let request_id = request
+        .guard::<&RequestId>()
+        .await
+        .expect("BUG: RequestId should return Outcome::Success");
+
+    let uri = request.uri();
+
+    (status, Json((request_id, Err(format!("{status}: {uri}"))).into()))
+}
+
+#[catch(422)]
+pub(crate) async fn unprocessable_entity(
+    request: &Request<'_>,
+) -> Json<ResponseBody<(), String>> {
+    let request_id = request
+        .guard::<&RequestId>()
+        .await
+        .expect("BUG: RequestId should return Outcome::Success");
+
+    let uri = request.uri();
+
+    Json((request_id, Err(format!("Semantic error in URI: {uri}"))).into())
+}
 
 #[catch(404)]
 pub(crate) async fn not_found(

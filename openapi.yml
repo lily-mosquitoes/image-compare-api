@@ -57,8 +57,8 @@ paths:
                   properties:
                     data:
                       $ref: '#/components/schemas/User'
-        '400':
-          description: Bad Request
+        '422':
+          description: Unprocessable Entity
           content:
             application/json:
               schema:
@@ -123,8 +123,8 @@ paths:
                   properties:
                     data:
                       $ref: '#/components/schemas/Comparison'
-        '400':
-          description: Bad Request
+        '422':
+          description: Unprocessable Entity
           content:
             application/json:
               schema:

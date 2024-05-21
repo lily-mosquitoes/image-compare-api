@@ -306,13 +306,16 @@ components:
         id:
           type: string
           format: uuid
+        dirname:
+          type: string
+          example: 'birds'
         images:
           type: array
           items:
             type: string
             format: uri
-            example: 'http://localhost:3000/api/images/imageA.png'
-          example: ['http://localhost:3000/api/images/imageA.png', 'http://localhost:3000/api/images/imageB.png']
+            example: '/static/images/birds/image%20A.png'
+          example: ['/static/images/birds/image%20A.png', '/static/images/birds/imageB.png']
     VoteForm:
       type: object
       properties:

@@ -13,7 +13,10 @@ use std::path::{
 use rocket::{
     fairing,
     fs::FileServer,
-    http::Header,
+    http::{
+        Header,
+        Method,
+    },
     Build,
     Rocket,
 };
@@ -52,13 +55,16 @@ pub fn rocket<S: Into<String>, P: AsRef<Path>>(
         .register(
             "/",
             catchers![
+                crate::catchers::default,
+                crate::catchers::unprocessable_entity,
                 crate::catchers::not_found,
-                crate::catchers::unauthorized
+                crate::catchers::unauthorized,
             ],
         )
         .mount(
             "/api",
             routes![
+                crate::api::options::options,
                 crate::api::healthcheck::handler::healthcheck,
                 crate::api::comparison::handler::get_comparison_for_user,
                 crate::api::user::handler::get_user,
@@ -116,18 +122,39 @@ impl fairing::Fairing for CORS {
     fn info(&self) -> fairing::Info {
         fairing::Info {
             name: "CORS Headers",
-            kind: fairing::Kind::Response,
+            kind: fairing::Kind::Response | fairing::Kind::Request,
         }
     }
 
     async fn on_response<'r>(
         &self,
-        _: &'r rocket::Request<'_>,
+        request: &'r rocket::Request<'_>,
         response: &mut rocket::Response<'r>,
     ) {
+        if request.method() == Method::Options {
+            response.set_header(Header::new(
+                "Access-Control-Allow-Methods",
+                "OPTIONS, POST, PUT, DELETE, GET",
+            ));
+            response.set_header(Header::new(
+                "Access-Control-Allow-Headers",
+                "Authorization",
+            ));
+        }
+
         response.set_header(Header::new(
             "Access-Control-Allow-Origin",
             self.allowed_origin.clone(),
         ));
+    }
+
+    async fn on_request(
+        &self,
+        request: &mut rocket::Request<'_>,
+        _: &mut rocket::Data<'_>,
+    ) {
+        if request.method() == Method::Options {
+            request.set_uri(uri!("/api/options"))
+        }
     }
 }

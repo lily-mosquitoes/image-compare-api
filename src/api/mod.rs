@@ -1,6 +1,7 @@
 pub(crate) mod admin;
 pub(crate) mod comparison;
 pub(crate) mod healthcheck;
+pub(crate) mod options;
 pub(crate) mod user;
 pub(crate) mod vote;
 

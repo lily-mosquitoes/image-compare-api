@@ -138,7 +138,7 @@ impl fairing::Fairing for CORS {
             ));
             response.set_header(Header::new(
                 "Access-Control-Allow-Headers",
-                "Authorization",
+                "Content-Type, Authorization",
             ));
         }
 

@@ -38,7 +38,7 @@ pub(crate) async fn unprocessable_entity(
 
     let uri = request.uri();
 
-    Json((request_id, Err(format!("Semantic error in URI: {uri}"))).into())
+    Json((request_id, Err(format!("Semantic error in request: {uri}"))).into())
 }
 
 #[catch(404)]

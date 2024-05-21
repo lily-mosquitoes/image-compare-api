@@ -62,7 +62,7 @@ fn get_user_with_incorrect_id_returns_expected_error(
         .expect("body to be present");
 
     let expected_error =
-        "Semantic error in URI: /api/user/not-a-uuid".to_string();
+        "Semantic error in request: /api/user/not-a-uuid".to_string();
 
     assert_eq!(body.error, expected_error);
 }

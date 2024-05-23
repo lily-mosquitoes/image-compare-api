@@ -4,7 +4,6 @@ use chrono::{
     DateTime,
     Utc,
 };
-use rocket::http::Status;
 use serde::{
     Deserialize,
     Serialize,
@@ -20,6 +19,8 @@ use super::{
 
 #[derive(Serialize, Deserialize)]
 pub(crate) struct Vote {
+    #[serde(skip_deserializing)]
+    pub(crate) id: Option<i64>,
     pub(crate) comparison_id: SqliteUuid,
     pub(crate) user_id: SqliteUuid,
     pub(crate) image: String,
@@ -27,11 +28,9 @@ pub(crate) struct Vote {
     pub(crate) created_at: DateTime<Utc>,
     #[serde(skip_deserializing)]
     pub(crate) ip_addr: Option<String>,
-    #[serde(skip)]
-    pub(crate) status: QueryStatus,
 }
 
-pub(crate) async fn create_or_update_vote(
+pub(crate) async fn create_vote(
     vote: &Vote,
     connection: &mut SqliteConnection,
 ) -> Result<Vote, QueryError> {
@@ -48,10 +47,9 @@ pub(crate) async fn create_or_update_vote(
         )),
         true => sqlx::query_as!(
             Vote,
-            "INSERT INTO vote (comparison_id, user_id, image, ip_addr, \
-             status) VALUES (?1, ?2, ?3, ?4, 201) ON CONFLICT DO UPDATE SET \
-             image = ?3, status = 200 RETURNING comparison_id, user_id, \
-             image, created_at as \"created_at: _\", ip_addr, status",
+            "INSERT INTO vote (comparison_id, user_id, image, ip_addr) VALUES \
+             (?1, ?2, ?3, ?4) RETURNING id, comparison_id, user_id, image, \
+             created_at as \"created_at: _\", ip_addr",
             *vote.comparison_id,
             *vote.user_id,
             vote.image,
@@ -85,34 +83,4 @@ async fn get_comparison_images(
 
 struct ComparisonImages<'a> {
     images: SqliteArray<'a>,
-}
-
-pub(crate) enum QueryStatus {
-    Updated,
-    Created,
-}
-
-impl Default for QueryStatus {
-    fn default() -> Self {
-        Self::Created
-    }
-}
-
-impl From<i64> for QueryStatus {
-    fn from(value: i64) -> Self {
-        match value {
-            200 => Self::Updated,
-            201 => Self::Created,
-            _ => unimplemented!(),
-        }
-    }
-}
-
-impl Vote {
-    fn status(&self) -> Status {
-        match self.status {
-            QueryStatus::Updated => Status::Ok,
-            QueryStatus::Created => Status::Created,
-        }
-    }
 }

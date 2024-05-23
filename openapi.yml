@@ -166,29 +166,6 @@ paths:
                   properties:
                     data:
                       $ref: '#/components/schemas/Vote'
-        '200':
-          description: Vote Updated
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/DefaultProperties'
-                - type: object
-                  properties:
-                    data:
-                      $ref: '#/components/schemas/Vote'
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/DefaultProperties'
-                - type: object
-                  properties:
-                    error:
-                      type: string
-                      example: 'Parameter `user_id` must be UUID'
         '422':
           description: Unprocessable Entity
           content:
@@ -334,6 +311,14 @@ components:
       - type: object
         properties:
           id:
-            type: string
-            format: uuid
+            type: integer
+            format: int64
       - $ref: '#/components/schemas/VoteForm'
+      - type: object
+        properties:
+          created_at:
+            type: string
+            format: date-time
+          ip_addr:
+            type: string
+            format: ipv4

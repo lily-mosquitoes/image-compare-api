@@ -134,7 +134,7 @@ impl fairing::Fairing for CORS {
         if request.method() == Method::Options {
             response.set_header(Header::new(
                 "Access-Control-Allow-Methods",
-                "OPTIONS, POST, PUT, DELETE, GET",
+                "OPTIONS, POST, DELETE, GET",
             ));
             response.set_header(Header::new(
                 "Access-Control-Allow-Headers",

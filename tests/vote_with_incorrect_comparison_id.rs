@@ -22,14 +22,14 @@ static STATIC_DIR: &'static str = relative!("tests/static_dir/ok");
     path = "./../fixtures",
     scripts("admins", "users", "comparisons", "votes")
 ))]
-async fn put_vote_with_incorrect_comparison_id_returns_422_unprocessable_entity(
+async fn post_vote_with_incorrect_comparison_id_returns_422_unprocessable_entity(
     _: SqlitePoolOptions,
     db_options: SqliteConnectOptions,
 ) {
     let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
 
     let response = client
-        .put(uri!("/api/vote"))
+        .post(uri!("/api/vote"))
         .json(&json!({
             "comparison_id": "81c53eec-c4f5-4283-a45f-e0f348bf4ec8",
             "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -45,14 +45,14 @@ async fn put_vote_with_incorrect_comparison_id_returns_422_unprocessable_entity(
     path = "./../fixtures",
     scripts("admins", "users", "comparisons", "votes")
 ))]
-async fn put_vote_with_incorrect_comparison_id_is_json_err_response(
+async fn post_vote_with_incorrect_comparison_id_is_json_err_response(
     _: SqlitePoolOptions,
     db_options: SqliteConnectOptions,
 ) {
     let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
 
     let body = client
-        .put(uri!("/api/vote"))
+        .post(uri!("/api/vote"))
         .json(&json!({
             "comparison_id": "81c53eec-c4f5-4283-a45f-e0f348bf4ec8",
             "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -70,14 +70,14 @@ async fn put_vote_with_incorrect_comparison_id_is_json_err_response(
     path = "./../fixtures",
     scripts("admins", "users", "comparisons", "votes")
 ))]
-async fn put_vote_with_incorrect_comparison_id_returns_expected_error(
+async fn post_vote_with_incorrect_comparison_id_returns_expected_error(
     _: SqlitePoolOptions,
     db_options: SqliteConnectOptions,
 ) {
     let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
 
     let body = client
-        .put(uri!("/api/vote"))
+        .post(uri!("/api/vote"))
         .json(&json!({
             "comparison_id": "81c53eec-c4f5-4283-a45f-e0f348bf4ec8",
             "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",

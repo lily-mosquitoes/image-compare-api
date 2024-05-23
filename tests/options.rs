@@ -58,10 +58,7 @@ macro_rules! test_preflight_for {
                 let allow_headers =
                     response.headers().get_one("Access-Control-Allow-Headers");
 
-                assert_eq!(
-                    allow_methods,
-                    Some("OPTIONS, POST, PUT, DELETE, GET")
-                );
+                assert_eq!(allow_methods, Some("OPTIONS, POST, DELETE, GET"));
                 assert_eq!(allow_headers, Some("Content-Type, Authorization"));
             }
         }

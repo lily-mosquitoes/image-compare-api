@@ -1,5 +1,9 @@
 pub(crate) mod handler;
 
+use chrono::{
+    DateTime,
+    Utc,
+};
 use rocket::http::Status;
 use serde::{
     Deserialize,
@@ -19,6 +23,10 @@ pub(crate) struct Vote {
     pub(crate) comparison_id: SqliteUuid,
     pub(crate) user_id: SqliteUuid,
     pub(crate) image: String,
+    #[serde(skip_deserializing)]
+    pub(crate) created_at: DateTime<Utc>,
+    #[serde(skip_deserializing)]
+    pub(crate) ip_addr: Option<String>,
     #[serde(skip)]
     pub(crate) status: QueryStatus,
 }
@@ -40,12 +48,14 @@ pub(crate) async fn create_or_update_vote(
         )),
         true => sqlx::query_as!(
             Vote,
-            "INSERT INTO vote (comparison_id, user_id, image, status) VALUES \
-             (?1, ?2, ?3, 201) ON CONFLICT DO UPDATE SET image = ?3, status = \
-             200 RETURNING *",
+            "INSERT INTO vote (comparison_id, user_id, image, ip_addr, \
+             status) VALUES (?1, ?2, ?3, ?4, 201) ON CONFLICT DO UPDATE SET \
+             image = ?3, status = 200 RETURNING comparison_id, user_id, \
+             image, created_at as \"created_at: _\", ip_addr, status",
             *vote.comparison_id,
             *vote.user_id,
             vote.image,
+            vote.ip_addr,
         )
         .fetch_one(connection)
         .await

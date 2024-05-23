@@ -1,5 +1,11 @@
 mod common;
 
+use std::net::IpAddr;
+
+use chrono::{
+    DateTime,
+    Utc,
+};
 use rocket::{
     fs::relative,
     http::Status,
@@ -27,6 +33,8 @@ struct Vote {
     comparison_id: Uuid,
     user_id: Uuid,
     image: String,
+    created_at: DateTime<Utc>,
+    ip_addr: IpAddr,
 }
 
 #[sqlx::test(fixtures(
@@ -41,6 +49,7 @@ async fn put_new_vote_with_correct_parameters_returns_201_created(
 
     let response = client
         .put(uri!("/api/vote"))
+        .remote("127.0.0.1:80".parse().expect("remote to be parseable"))
         .json(&json!({
             "comparison_id": "7d68f7e3-afe5-4d08-9d89-e6905f152eec",
             "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -64,6 +73,7 @@ async fn put_new_vote_with_correct_parameters_is_json_ok_response(
 
     let body = client
         .put(uri!("/api/vote"))
+        .remote("127.0.0.1:80".parse().expect("remote to be parseable"))
         .json(&json!({
             "comparison_id": "7d68f7e3-afe5-4d08-9d89-e6905f152eec",
             "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -89,6 +99,7 @@ async fn put_new_vote_with_correct_parameters_returns_expected_vote(
 
     let body = client
         .put(uri!("/api/vote"))
+        .remote("127.0.0.1:80".parse().expect("remote to be parseable"))
         .json(&json!({
             "comparison_id": "7d68f7e3-afe5-4d08-9d89-e6905f152eec",
             "user_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -106,6 +117,8 @@ async fn put_new_vote_with_correct_parameters_returns_expected_vote(
         user_id: Uuid::parse_str("3fa85f64-5717-4562-b3fc-2c963f66afa6")
             .unwrap(),
         image: "/static/images/image%20A.png".to_string(),
+        created_at: body.data.created_at,
+        ip_addr: "127.0.0.1".parse().expect("IP to be parseable"),
     };
 
     assert_eq!(body.data, expected_vote);

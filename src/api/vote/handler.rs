@@ -1,3 +1,5 @@
+use std::net::IpAddr;
+
 use rocket::{
     http::Status,
     serde::json::Json,
@@ -16,10 +18,12 @@ use crate::{
 
 #[put("/vote", format = "application/json", data = "<vote>")]
 pub(crate) async fn vote(
-    vote: Json<Vote>,
+    mut vote: Json<Vote>,
+    ip_addr: Option<IpAddr>,
     request_id: &RequestId,
     mut connection: Connection<DbPool>,
 ) -> (Status, Json<ResponseBody<Vote, QueryError>>) {
+    vote.ip_addr = ip_addr.map(|ip| ip.to_canonical().to_string());
     let result = super::create_or_update_vote(&vote, &mut **connection).await;
 
     match result {

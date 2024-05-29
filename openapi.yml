@@ -137,15 +137,15 @@ paths:
                       example: 'ID must be UUID'
         '404':
           $ref: '#/components/responses/404_NotFound'
-        '500':
-          $ref: '#/components/responses/500_InternalServerError'
         '503':
           $ref: '#/components/responses/503_ServiceUnavailable'
+        '500':
+          $ref: '#/components/responses/500_InternalServerError'
   /api/vote:
-    put:
+    post:
       summary: vote on a comparison, as a user
-      description: Creates a vote from the user for a comparison
-      operationId: put_vote
+      description: Creates a new vote from the user for a comparison
+      operationId: post_vote
       tags:
         - Vote
       requestBody:
@@ -305,7 +305,7 @@ components:
         image:
           type: string
           format: uri
-          example: 'imageA.png'
+          example: '/static/images/birds/image%20A.png'
     Vote:
       allOf:
       - type: object

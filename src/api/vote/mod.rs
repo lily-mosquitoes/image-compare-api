@@ -43,7 +43,7 @@ pub(crate) async fn create_vote(
 
     match image_found {
         false => Err(QueryError::RowNotFound(
-            "`image` with requested name not found".to_string(),
+            "`image` not found for requested `comparison`".to_string(),
         )),
         true => sqlx::query_as!(
             Vote,

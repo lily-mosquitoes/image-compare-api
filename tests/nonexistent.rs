@@ -5,52 +5,45 @@ use rocket::{
     http::Status,
     uri,
 };
-use sqlx::sqlite::SqliteConnectOptions;
 
 use crate::common::{
-    get_asynchronous_api_client,
-    ErrResponse,
+    make_api_test,
+    ApiResponse,
 };
 
-static STATIC_DIR: &'static str = relative!("tests/static_dir/ok");
+mod nonexistent {
+    use super::*;
 
-#[sqlx::test]
-async fn get_nonexistent_returns_404_not_found() {
-    let db_options = SqliteConnectOptions::new();
-    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
+    make_api_test! {
+        #[fileserver(static_dir = relative!("tests/static_dir/ok"))]
+        #[fixtures()]
+        let request = |client| {
+            client.get(uri!("/non/existent/path"))
+        };
 
-    let response = client.get(uri!("/non/existent/path")).dispatch().await;
+        #[test_request]
+        let returns_404_not_found = |response| {
+            assert_eq!(response.status(), Status::NotFound);
+        };
 
-    assert_eq!(response.status(), Status::NotFound);
-}
+        #[test_request]
+        let returns_json_err = |response| {
+            let json = response.into_json::<ApiResponse<(), String>>()
+                .await;
 
-#[sqlx::test]
-async fn get_nonexistent_is_json_error_response() {
-    let db_options = SqliteConnectOptions::new();
-    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
+            assert!(json.is_some());
+        };
 
-    let body = client
-        .get(uri!("/non/existent/path"))
-        .dispatch()
-        .await
-        .into_json::<ErrResponse<String>>()
-        .await;
+        #[test_request]
+        let returns_expected_error = |response| {
+            let json = response.into_json::<ApiResponse<(), String>>()
+                .await;
+            let error = json
+                .expect("json to be present")
+                .error
+                .expect("error to be present");
 
-    assert!(body.is_some());
-}
-
-#[sqlx::test]
-async fn get_nonexistent_returns_expected_error() {
-    let db_options = SqliteConnectOptions::new();
-    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
-
-    let body = client
-        .get(uri!("/non/existent/path"))
-        .dispatch()
-        .await
-        .into_json::<ErrResponse<String>>()
-        .await
-        .expect("body to be present");
-
-    assert_eq!(body.error, "Resource not found");
+            assert_eq!(error, "Resource not found");
+        };
+    }
 }

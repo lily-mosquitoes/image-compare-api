@@ -5,36 +5,33 @@ use rocket::{
     http::Status,
     uri,
 };
-use sqlx::sqlite::SqliteConnectOptions;
 
 use crate::common::{
-    get_asynchronous_api_client,
-    OkResponse,
+    make_api_test,
+    ApiResponse,
 };
 
-static STATIC_DIR: &'static str = relative!("tests/static_dir/ok");
+mod healthcheck {
+    use super::*;
 
-#[sqlx::test]
-async fn get_healthcheck_returns_200_ok() {
-    let db_options = SqliteConnectOptions::new();
-    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
+    make_api_test! {
+        #[fileserver(static_dir = relative!("tests/static_dir/ok"))]
+        #[fixtures()]
+        let request = |client| {
+            client.get(uri!("/api/healthcheck"))
+        };
 
-    let response = client.get(uri!("/api/healthcheck")).dispatch().await;
+        #[test_request]
+        let returns_200_ok = |response| {
+            assert_eq!(response.status(), Status::Ok);
+        };
 
-    assert_eq!(response.status(), Status::Ok);
-}
+        #[test_request]
+        let returns_json_ok = |response| {
+            let json = response.into_json::<ApiResponse<(), ()>>()
+                .await;
 
-#[sqlx::test]
-async fn get_healthcheck_is_json_ok_response() {
-    let db_options = SqliteConnectOptions::new();
-    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
-
-    let body = client
-        .get(uri!("/api/healthcheck"))
-        .dispatch()
-        .await
-        .into_json::<OkResponse<()>>()
-        .await;
-
-    assert!(body.is_some());
+            assert!(json.is_some());
+        };
+    }
 }

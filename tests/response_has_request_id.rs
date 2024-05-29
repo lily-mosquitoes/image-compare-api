@@ -7,9 +7,8 @@ use rocket::{
 use sqlx::sqlite::SqliteConnectOptions;
 
 use crate::common::{
-    get_asynchronous_api_client,
-    ErrResponse,
-    OkResponse,
+    get_api_client,
+    ApiResponse,
 };
 
 static STATIC_DIR: &'static str = relative!("tests/static_dir/ok");
@@ -17,13 +16,13 @@ static STATIC_DIR: &'static str = relative!("tests/static_dir/ok");
 #[sqlx::test]
 async fn json_ok_response_has_request_id() {
     let db_options = SqliteConnectOptions::new();
-    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
+    let client = get_api_client(STATIC_DIR, db_options).await;
 
     let body = client
         .get(uri!("/api/healthcheck"))
         .dispatch()
         .await
-        .into_json::<OkResponse<()>>()
+        .into_json::<ApiResponse<(), ()>>()
         .await;
 
     assert!(body.is_some());
@@ -32,13 +31,13 @@ async fn json_ok_response_has_request_id() {
 #[sqlx::test]
 async fn json_err_response_has_request_id() {
     let db_options = SqliteConnectOptions::new();
-    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
+    let client = get_api_client(STATIC_DIR, db_options).await;
 
     let body = client
         .get(uri!("/api/does_not_exist"))
         .dispatch()
         .await
-        .into_json::<ErrResponse<String>>()
+        .into_json::<ApiResponse<(), String>>()
         .await;
 
     assert!(body.is_some());
@@ -47,13 +46,13 @@ async fn json_err_response_has_request_id() {
 #[sqlx::test]
 async fn different_requests_have_different_request_ids() {
     let db_options = SqliteConnectOptions::new();
-    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
+    let client = get_api_client(STATIC_DIR, db_options).await;
 
     let body_0 = client
         .get(uri!("/api/healthcheck"))
         .dispatch()
         .await
-        .into_json::<OkResponse<()>>()
+        .into_json::<ApiResponse<(), ()>>()
         .await
         .expect("body to be present");
 
@@ -61,7 +60,7 @@ async fn different_requests_have_different_request_ids() {
         .get(uri!("/non/existent/path"))
         .dispatch()
         .await
-        .into_json::<ErrResponse<String>>()
+        .into_json::<ApiResponse<(), String>>()
         .await
         .expect("body to be present");
 

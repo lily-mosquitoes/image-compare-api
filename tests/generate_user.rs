@@ -3,21 +3,15 @@ mod common;
 use rocket::{
     fs::relative,
     http::Status,
-    serde::uuid::Uuid,
     uri,
 };
 use serde::Deserialize;
-use sqlx::sqlite::{
-    SqliteConnectOptions,
-    SqlitePoolOptions,
-};
+use uuid::Uuid;
 
 use crate::common::{
-    get_asynchronous_api_client,
-    OkResponse,
+    make_api_test,
+    ApiResponse,
 };
-
-static STATIC_DIR: &'static str = relative!("tests/static_dir/ok");
 
 #[derive(Debug, PartialEq, Deserialize)]
 struct User {
@@ -26,81 +20,84 @@ struct User {
     average_lambda: f64,
 }
 
-#[sqlx::test]
-async fn generate_user_returns_201_created(
-    _: SqlitePoolOptions,
-    db_options: SqliteConnectOptions,
-) {
-    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
+mod generate_user {
+    use super::*;
 
-    let response = client.post(uri!("/api/user")).dispatch().await;
+    make_api_test! {
+        #[fileserver(static_dir = relative!("tests/static_dir/ok"))]
+        #[fixtures()]
+        let request = |client| {
+            client.post(uri!("/api/user"))
+        };
 
-    assert_eq!(response.status(), Status::Created);
-}
+        #[test_request]
+        let returns_201_created = |response| {
+            assert_eq!(response.status(), Status::Created);
+        };
 
-#[sqlx::test]
-async fn generate_user_is_json_ok_response(
-    _: SqlitePoolOptions,
-    db_options: SqliteConnectOptions,
-) {
-    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
+        #[test_request]
+        let returns_json_ok = |response| {
+            let json = response.into_json::<ApiResponse<User, ()>>()
+                .await;
 
-    let body = client
-        .post(uri!("/api/user"))
-        .dispatch()
-        .await
-        .into_json::<OkResponse<User>>()
-        .await;
+            assert!(json.is_some());
+        };
 
-    assert!(body.is_some());
-}
+        #[test_request]
+        let returns_new_user = |response| {
+            let json = response.into_json::<ApiResponse<User, ()>>()
+                .await;
+            let data = json
+                .expect("json to be preset")
+                .data
+                .expect("data to be present");
 
-#[sqlx::test]
-async fn generate_user_returns_new_user(
-    _: SqlitePoolOptions,
-    db_options: SqliteConnectOptions,
-) {
-    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
+            let expected_new_user = User {
+                id: data.id,
+                comparisons: 0,
+                average_lambda: 0.0,
+            };
 
-    let body = client
-        .post(uri!("/api/user"))
-        .dispatch()
-        .await
-        .into_json::<OkResponse<User>>()
-        .await
-        .expect("body to be present");
+            assert_eq!(data, expected_new_user);
+        };
 
-    let expected_user = User {
-        id: body.data.id,
-        comparisons: 0,
-        average_lambda: 0.0,
-    };
+        #[test_request]
+        let returns_new_user_wich_can_be_retrieved = |response| {
+            let json = response.into_json::<ApiResponse<User, ()>>()
+                .await;
+            let data = json
+                .expect("json to be preset")
+                .data
+                .expect("data to be present");
 
-    assert_eq!(body.data, expected_user);
-}
+            let response = client
+                .get(format!("/api/user/{}", data.id))
+                .dispatch()
+                .await;
 
-#[sqlx::test]
-async fn generate_user_is_not_idempotent(
-    _: SqlitePoolOptions,
-    db_options: SqliteConnectOptions,
-) {
-    let client = get_asynchronous_api_client(STATIC_DIR, db_options).await;
+            assert_eq!(response.status(), Status::Ok);
+        };
 
-    let body_a = client
-        .post(uri!("/api/user"))
-        .dispatch()
-        .await
-        .into_json::<OkResponse<User>>()
-        .await
-        .expect("body to be present");
+        #[test_request]
+        let is_not_idempotent = |response| {
+            let json = response.into_json::<ApiResponse<User, ()>>()
+                .await;
+            let data_a = json
+                .expect("json to be preset")
+                .data
+                .expect("data to be present");
 
-    let body_b = client
-        .post(uri!("/api/user"))
-        .dispatch()
-        .await
-        .into_json::<OkResponse<User>>()
-        .await
-        .expect("body to be present");
+            let data_b = client
+                .post(format!("/api/user"))
+                .dispatch()
+                .await
+                .into_json::<ApiResponse<User, ()>>()
+                .await
+                .expect("json to be preset")
+                .data
+                .expect("data to be present");
 
-    assert_ne!(body_a.data.id, body_b.data.id);
+            assert_ne!(data_a.id, data_b.id);
+        };
+    }
 }

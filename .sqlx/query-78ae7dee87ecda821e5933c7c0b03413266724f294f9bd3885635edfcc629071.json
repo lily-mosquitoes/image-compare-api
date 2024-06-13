@@ -1,0 +1,50 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO vote (comparison_id, user_id, image, ip_addr) VALUES (?1, ?2, ?3, ?4) RETURNING id, comparison_id, user_id, image, created_at as \"created_at: _\", ip_addr",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Int64"
+      },
+      {
+        "name": "comparison_id",
+        "ordinal": 1,
+        "type_info": "Blob"
+      },
+      {
+        "name": "user_id",
+        "ordinal": 2,
+        "type_info": "Blob"
+      },
+      {
+        "name": "image",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at: _",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "ip_addr",
+        "ordinal": 5,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "78ae7dee87ecda821e5933c7c0b03413266724f294f9bd3885635edfcc629071"
+}

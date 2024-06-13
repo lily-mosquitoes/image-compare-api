@@ -1,0 +1,20 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT images FROM comparison WHERE id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "images",
+        "ordinal": 0,
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "363faa05b6517e4a1031a2c4f1ec0c5b932977289c3785072b72cb6164570213"
+}

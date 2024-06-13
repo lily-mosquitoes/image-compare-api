@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO comparison (id, dirname, images, created_by) VALUES (?, ?, ?, ?) ON CONFLICT DO UPDATE SET images=images RETURNING id, dirname, images, created_at as \"created_at: _\", created_by",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Blob"
+      },
+      {
+        "name": "dirname",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "images",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_at: _",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "created_by",
+        "ordinal": 4,
+        "type_info": "Int64"
+      }
+    ],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "36985d897697853f5385673ead3ed8b512c7218e474467713873c02dc09bb6a8"
+}

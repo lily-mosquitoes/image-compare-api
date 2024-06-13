@@ -1,0 +1,32 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT user.*, (SELECT COUNT(vote.id) FROM vote WHERE vote.user_id = user.id) as `votes!: i64` FROM user WHERE user.id = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Blob"
+      },
+      {
+        "name": "average_lambda",
+        "ordinal": 1,
+        "type_info": "Float"
+      },
+      {
+        "name": "votes!: i64",
+        "ordinal": 2,
+        "type_info": "Null"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "d2f33b25208e8aeacc542e31768c6c70aa9e8807e88abca054f42f0cf3232875"
+}

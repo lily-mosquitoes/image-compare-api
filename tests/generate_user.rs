@@ -16,7 +16,7 @@ use crate::common::{
 #[derive(Debug, PartialEq, Deserialize)]
 struct User {
     id: Uuid,
-    comparisons: u64,
+    votes: i64,
     average_lambda: f64,
 }
 
@@ -54,7 +54,7 @@ mod generate_user {
 
             let expected_new_user = User {
                 id: data.id,
-                comparisons: 0,
+                votes: 0,
                 average_lambda: 0.0,
             };
 

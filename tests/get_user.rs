@@ -19,7 +19,7 @@ use crate::common::{
 #[derive(Debug, PartialEq, Deserialize)]
 struct User {
     id: Uuid,
-    comparisons: u64,
+    votes: u64,
     average_lambda: f64,
 }
 
@@ -28,7 +28,7 @@ mod get_user_with_correct_id {
 
     make_api_test! {
         #[fileserver(static_dir = relative!("tests/static_dir/ok"))]
-        #[fixtures("users")]
+        #[fixtures("users", "admins", "comparisons", "votes")]
         let request = |client| {
             client.get(uri!("/api/user/3fa85f64-5717-4562-b3fc-2c963f66afa6"))
         };
@@ -57,7 +57,7 @@ mod get_user_with_correct_id {
 
             let expected_user = User {
                 id: uuid!("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
-                comparisons: 1,
+                votes: 1,
                 average_lambda: 0.1234,
             };
 
@@ -71,7 +71,7 @@ mod get_user_with_incorrect_id {
 
     make_api_test! {
         #[fileserver(static_dir = relative!("tests/static_dir/ok"))]
-        #[fixtures("users")]
+        #[fixtures("users", "admins", "comparisons", "votes")]
         let request = |client| {
             client.get(uri!("/api/user/a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8"))
         };
@@ -108,7 +108,7 @@ mod get_user_with_incorrect_parameter {
 
     make_api_test! {
         #[fileserver(static_dir = relative!("tests/static_dir/ok"))]
-        #[fixtures("users")]
+        #[fixtures("users", "admins", "comparisons", "votes")]
         let request = |client| {
             client.get(uri!("/api/user/not-a-uuid"))
         };

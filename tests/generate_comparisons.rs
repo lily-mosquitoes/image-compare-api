@@ -23,6 +23,16 @@ struct Comparison {
     created_by: i64,
 }
 
+impl PartialOrd for Comparison {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        let as_string =
+            |origin: &Origin<'static>| origin.path().as_str().to_string();
+        let a: String = self.images.iter().map(as_string).collect();
+        let b: String = other.images.iter().map(as_string).collect();
+        Some(a.cmp(&b))
+    }
+}
+
 mod generate_comparisons_from_folder_ok {
     use super::*;
 
@@ -55,12 +65,12 @@ mod generate_comparisons_from_folder_ok {
         let returns_expected_data = |response| {
             let json = response.into_json::<ApiResponse<Vec<Comparison>, ()>>()
                 .await;
-            let data = json
+            let mut data = json
                 .expect("json to be preset")
                 .data
                 .expect("data to be present");
 
-            let expected_data = vec![
+            let mut expected_data = vec![
                 // root comparisons (AB, BA)
                 Comparison {
                     dirname: "".to_string(),
@@ -146,7 +156,12 @@ mod generate_comparisons_from_folder_ok {
                 },
             ];
 
-            assert_eq!(data, expected_data);
+            data.sort_by(|a, b| a.partial_cmp(b).unwrap());
+            expected_data.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+            for (c, e) in std::iter::zip(data, expected_data) {
+                assert_eq!(c, e);
+            }
         };
 
         #[test_request]

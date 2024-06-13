@@ -272,7 +272,7 @@ components:
         id:
           type: string
           format: uuid
-        comparisons:
+        votes:
           type: integer
         average_lambda:
           type: number

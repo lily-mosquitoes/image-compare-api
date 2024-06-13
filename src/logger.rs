@@ -11,6 +11,7 @@ pub(crate) fn setup() -> Result<(), fern::InitError> {
         })
         .level(log::LevelFilter::Debug)
         .chain(std::io::stdout())
+        .chain(fern::log_file("image-compare-api.log")?)
         .apply()?;
 
     Ok(())

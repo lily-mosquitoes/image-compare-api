@@ -15,6 +15,7 @@ tags:
   - name: Comparison
   - name: Vote
   - name: Image
+  - name: Admin
 
 paths:
   /api/healthcheck:
@@ -203,8 +204,40 @@ paths:
                 format: binary
         '404':
           $ref: '#/components/responses/404_NotFound'
+  /api/admin/comparison:
+    post:
+      summary: generate comparisons in database from the static folder
+      description: Returns all comparisons generated. The comparisons are based on the images currently in the static folder and comparsiosns between two images are only done for images under the same subfolder's root.
+      operationId: post_admin_comparison
+      tags:
+        - Admin
+        - Comparison
+      security:
+        - BearerAuth: []
+      responses:
+        '201':
+          description: Comparisons created
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/DefaultProperties'
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Comparison'
+        '401':
+          $ref: '#/components/responses/401_Unauthorized'
+        '500':
+          $ref: '#/components/responses/500_InternalServerError'
 
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
   headers:
     Location:
       description: Location of the created resource
@@ -218,6 +251,23 @@ components:
         type: integer
         example: 36000
   responses:
+    401_Unauthorized:
+      description: Unauthorized
+      headers:
+        WWW-Authenticate:
+          schema:
+            type: string
+            example: 'Bearer'
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '#/components/schemas/DefaultProperties'
+              - type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Unauthorized'
     404_NotFound:
       description: Not Found
       content:

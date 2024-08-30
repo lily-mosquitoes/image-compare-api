@@ -19,10 +19,11 @@ use crate::common::{
 #[derive(Deserialize)]
 struct Comparison {
     id: Uuid,
+    dirname: String,
     images: Vec<Origin<'static>>,
 }
 
-mod get_comparison_for_user_with_correct_id {
+mod get_comparison_for_user_with_correct_id_on_root {
     use super::*;
 
     make_api_test! {
@@ -57,6 +58,97 @@ mod get_comparison_for_user_with_correct_id {
                 .expect("data to be present");
 
             assert_eq!(data.id.to_string(), "7d68f7e3-afe5-4d08-9d89-e6905f152eec");
+        };
+
+        #[test_request]
+        let returns_comparison_from_correct_dir = |response| {
+            let json = response.into_json::<ApiResponse<Comparison, ()>>()
+                .await;
+            let data = json
+                .expect("json to be preset")
+                .data
+                .expect("data to be present");
+
+            assert_eq!(data.dirname, "");
+        };
+
+        #[test_request]
+        let returns_comparison_with_2_images = |response| {
+            let json = response.into_json::<ApiResponse<Comparison, ()>>()
+                .await;
+            let data = json
+                .expect("json to be preset")
+                .data
+                .expect("data to be present");
+
+            assert_eq!(data.images.len(), 2);
+        };
+
+        #[test_request]
+        let returns_images_with_valid_origin = |response| {
+            let json = response.into_json::<ApiResponse<Comparison, ()>>()
+                .await;
+            let data = json
+                .expect("json to be preset")
+                .data
+                .expect("data to be present");
+
+            for image in data.images {
+                let response = client.get(image).dispatch().await;
+
+                assert_eq!(response.status(), Status::Ok);
+            }
+        };
+    }
+}
+
+mod get_comparison_for_user_with_correct_id_on_subfolder {
+    use super::*;
+
+    make_api_test! {
+        #[fileserver(static_dir = relative!("tests/static_dir/ok"))]
+        #[fixtures("admins", "users", "comparisons", "votes")]
+        let request = |client| {
+            client.get(uri!(
+                "/api/user/3fa85f64-5717-4562-b3fc-2c963f66afa6/comparison?dirname=folder_b/folder_c"
+            ))
+        };
+
+        #[test_request]
+        let returns_200_ok = |response| {
+            assert_eq!(response.status(), Status::Ok);
+        };
+
+        #[test_request]
+        let returns_json_ok = |response| {
+            let json = response.into_json::<ApiResponse<Comparison, ()>>()
+                .await;
+
+            assert!(json.is_some());
+        };
+
+        #[test_request]
+        let returns_comparison_without_a_vote_for_this_user = |response| {
+            let json = response.into_json::<ApiResponse<Comparison, ()>>()
+                .await;
+            let data = json
+                .expect("json to be preset")
+                .data
+                .expect("data to be present");
+
+            assert_eq!(data.id.to_string(), "f15b0193-818c-4a55-9517-284e4aabdd85");
+        };
+
+        #[test_request]
+        let returns_comparison_from_correct_dir = |response| {
+            let json = response.into_json::<ApiResponse<Comparison, ()>>()
+                .await;
+            let data = json
+                .expect("json to be preset")
+                .data
+                .expect("data to be present");
+
+            assert_eq!(data.dirname, "folder_b/folder_c");
         };
 
         #[test_request]

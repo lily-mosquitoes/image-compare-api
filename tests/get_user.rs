@@ -57,7 +57,7 @@ mod get_user_with_correct_id {
 
             let expected_user = User {
                 id: uuid!("3fa85f64-5717-4562-b3fc-2c963f66afa6"),
-                votes: 1,
+                votes: 2,
                 average_lambda: 0.1234,
             };
 

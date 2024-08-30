@@ -25,14 +25,17 @@ pub(crate) struct Comparison<'a> {
 
 async fn get_comparison_for_user<'r>(
     user_id: Uuid,
+    dirname: String,
     connection: &mut SqliteConnection,
 ) -> Result<Comparison<'r>, QueryError> {
     sqlx::query_as!(
         Comparison,
         "SELECT id, dirname, images, created_at as \"created_at: _\", \
-         created_by FROM comparison WHERE comparison.id NOT IN (SELECT \
-         comparison_id FROM vote WHERE user_id = ?) LIMIT 1",
-        user_id
+         created_by FROM comparison WHERE comparison.dirname = ?1 AND \
+         comparison.id NOT IN (SELECT comparison_id FROM vote WHERE user_id = \
+         ?2) LIMIT 1",
+        dirname,
+        user_id,
     )
     .fetch_one(connection)
     .await

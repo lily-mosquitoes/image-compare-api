@@ -15,15 +15,17 @@ use crate::{
     DbPool,
 };
 
-#[get("/user/<id>/comparison")]
+#[get("/user/<id>/comparison?<dirname>")]
 pub(crate) async fn get_comparison_for_user<'r>(
     id: Uuid,
     request_id: &RequestId,
+    dirname: Option<String>,
     mut connection: Connection<DbPool>,
 ) -> (Status, Json<ResponseBody<Comparison<'r>, QueryError>>) {
     let user = crate::api::user::get_user(id, &mut **connection).await;
+    let dirname = dirname.unwrap_or("".to_string());
     let comparison =
-        super::get_comparison_for_user(id, &mut **connection).await;
+        super::get_comparison_for_user(id, dirname, &mut **connection).await;
 
     match (user, comparison) {
         (Err(error), _) => {

@@ -66,6 +66,7 @@ pub fn rocket<S: Into<String>, P: AsRef<Path>>(
             routes![
                 crate::api::options::options,
                 crate::api::healthcheck::handler::healthcheck,
+                crate::api::comparison::handler::get_comparison_dirnames,
                 crate::api::comparison::handler::get_comparison_for_user,
                 crate::api::user::handler::get_user,
                 crate::api::user::handler::generate_user,

@@ -46,3 +46,20 @@ async fn get_comparison_for_user<'r>(
         error => error.into(),
     })
 }
+
+async fn get_comparison_dirnames(
+    connection: &mut SqliteConnection,
+) -> Result<Vec<String>, QueryError> {
+    sqlx::query!("SELECT DISTINCT dirname FROM comparison")
+        .fetch_all(connection)
+        .await
+        .map_err(|error| match error {
+            sqlx::Error::RowNotFound => QueryError::RowNotFound(
+                "No `comparison`s available".to_string(),
+            ),
+            error => error.into(),
+        })
+        .map(|results| {
+            results.iter().map(|entry| entry.dirname.clone()).collect()
+        })
+}

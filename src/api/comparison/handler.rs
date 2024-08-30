@@ -43,3 +43,24 @@ pub(crate) async fn get_comparison_for_user<'r>(
         },
     }
 }
+
+#[get("/comparison/dirnames")]
+pub(crate) async fn get_comparison_dirnames<'r>(
+    request_id: &RequestId,
+    mut connection: Connection<DbPool>,
+) -> (Status, Json<ResponseBody<Vec<String>, QueryError>>) {
+    let dirnames = super::get_comparison_dirnames(&mut **connection).await;
+
+    match dirnames {
+        Err(error) => {
+            (error.default_status(), Json((request_id, Err(error)).into()))
+        },
+        Ok(dirnames) if dirnames.len() == 0 => {
+            let error = QueryError::RowNotFound(
+                "No `comparison`s available".to_string(),
+            );
+            (Status::ServiceUnavailable, Json((request_id, Err(error)).into()))
+        },
+        Ok(dirnames) => (Status::Ok, Json((request_id, Ok(dirnames)).into())),
+    }
+}

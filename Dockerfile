@@ -49,6 +49,9 @@ COPY --from=build /${PROJECT_NAME}/target/release/${PROJECT_NAME} .
 # copy over the migrations directory
 COPY ./migrations ./migrations
 
+# curl for healthchecks
+RUN apt-get update && apt-get install -y curl
+
 # set command to run the binary
 ENV PROJECT_NAME=$PROJECT_NAME
 CMD ["sh", "-c", "./${PROJECT_NAME}"]

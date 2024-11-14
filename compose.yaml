@@ -1,0 +1,27 @@
+services:
+  api:
+    build:
+      context: .
+
+    restart: always
+
+    env_file:
+        - .env
+
+    volumes:
+      - type: bind
+        source: ./database
+        target: /database
+
+      - type: bind
+        source: "${STATIC_DIR}"
+        target: "/${STATIC_DIR}"
+        read_only: true
+
+    ports:
+      - name: api-port
+        target: "${ROCKET_PORT-8000}"
+        published: "${ROCKET_PORT-8000}"
+        app_protocol: http
+
+    network_mode: host

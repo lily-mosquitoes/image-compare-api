@@ -16,7 +16,7 @@ async fn main() -> Result<(), rocket::Error> {
         panic!("failed to setup logger");
     }
 
-    dotenvy::dotenv().expect(".env to be present");
+    dotenvy::dotenv().ok();
 
     let allowed_origin = std::env::var("ALLOWED_ORIGIN")
         .expect("`ALLOWED_ORIGIN` to be set in .env");

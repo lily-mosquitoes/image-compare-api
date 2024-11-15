@@ -50,6 +50,7 @@ pub fn rocket<S: Into<String>, P: AsRef<Path>>(
 
     rocket::custom(figment)
         .attach(CORS { allowed_origin })
+        .attach(CacheControl)
         .attach(DbPool::init())
         .attach(DbMigrations)
         .register(
@@ -156,6 +157,31 @@ impl fairing::Fairing for CORS {
     ) {
         if request.method() == Method::Options {
             request.set_uri(uri!("/api/options"))
+        }
+    }
+}
+
+struct CacheControl;
+
+#[rocket::async_trait]
+impl fairing::Fairing for CacheControl {
+    fn info(&self) -> fairing::Info {
+        fairing::Info {
+            name: "CacheControl Headers",
+            kind: fairing::Kind::Response,
+        }
+    }
+
+    async fn on_response<'r>(
+        &self,
+        request: &'r rocket::Request<'_>,
+        response: &mut rocket::Response<'r>,
+    ) {
+        if request.uri().path().starts_with(STATIC_ROUTE) {
+            response.set_header(Header::new(
+                "Cache-Control",
+                "public, max-age=15552000",
+            ));
         }
     }
 }

@@ -49,8 +49,8 @@ COPY --from=build /${PROJECT_NAME}/target/release/${PROJECT_NAME} .
 # copy over the migrations directory
 COPY ./migrations ./migrations
 
-# curl for healthchecks
-RUN apt-get update && apt-get install -y curl
+# curl for healthchecks / sqlite3 for db managing
+RUN apt-get update && apt-get install -y curl sqlite3
 
 # set command to run the binary
 ENV PROJECT_NAME=$PROJECT_NAME

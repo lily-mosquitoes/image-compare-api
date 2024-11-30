@@ -34,6 +34,8 @@ impl PartialOrd for Comparison {
 }
 
 mod generate_comparisons_from_folder_ok {
+    use pretty_assertions::assert_eq;
+
     use super::*;
 
     make_api_test! {
@@ -151,6 +153,55 @@ mod generate_comparisons_from_folder_ok {
                     images: vec![
                         uri!("/static/images/folder_b/folder_c/image%205.png"),
                         uri!("/static/images/folder_b/folder_c/image%204.png"),
+                    ],
+                    created_by: 1,
+                },
+                // folder_d_truncate_at_2 comparisons (12, 21, 23, 32, 34, 43)
+                Comparison {
+                    dirname: "folder_d_truncate_at_2".to_string(),
+                    images: vec![
+                        uri!("/static/images/folder_d_truncate_at_2/image%201.png"),
+                        uri!("/static/images/folder_d_truncate_at_2/image%202.png"),
+                    ],
+                    created_by: 1,
+                },
+                Comparison {
+                    dirname: "folder_d_truncate_at_2".to_string(),
+                    images: vec![
+                        uri!("/static/images/folder_d_truncate_at_2/image%202.png"),
+                        uri!("/static/images/folder_d_truncate_at_2/image%201.png"),
+                    ],
+                    created_by: 1,
+                },
+                Comparison {
+                    dirname: "folder_d_truncate_at_2".to_string(),
+                    images: vec![
+                        uri!("/static/images/folder_d_truncate_at_2/image%202.png"),
+                        uri!("/static/images/folder_d_truncate_at_2/image%203.png"),
+                    ],
+                    created_by: 1,
+                },
+                Comparison {
+                    dirname: "folder_d_truncate_at_2".to_string(),
+                    images: vec![
+                        uri!("/static/images/folder_d_truncate_at_2/image%203.png"),
+                        uri!("/static/images/folder_d_truncate_at_2/image%202.png"),
+                    ],
+                    created_by: 1,
+                },
+                Comparison {
+                    dirname: "folder_d_truncate_at_2".to_string(),
+                    images: vec![
+                        uri!("/static/images/folder_d_truncate_at_2/image%203.png"),
+                        uri!("/static/images/folder_d_truncate_at_2/image%204.png"),
+                    ],
+                    created_by: 1,
+                },
+                Comparison {
+                    dirname: "folder_d_truncate_at_2".to_string(),
+                    images: vec![
+                        uri!("/static/images/folder_d_truncate_at_2/image%204.png"),
+                        uri!("/static/images/folder_d_truncate_at_2/image%203.png"),
                     ],
                     created_by: 1,
                 },

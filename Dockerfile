@@ -22,6 +22,9 @@ WORKDIR /${PROJECT_NAME}
 COPY ./rust-toolchain.toml ./
 COPY ./Cargo.* ./
 
+# ensure the version from rust-toolchain gets installed
+RUN rustup update
+
 # build dependencies (for layer caching)
 RUN cargo build --release
 RUN rm -r src

@@ -23,7 +23,7 @@ COPY ./rust-toolchain.toml ./
 COPY ./Cargo.* ./
 
 # ensure the version from rust-toolchain gets installed
-RUN rustup update
+RUN rustup toolchain install
 
 # build dependencies (for layer caching)
 RUN cargo build --release

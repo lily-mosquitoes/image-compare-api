@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "SELECT id, dirname, images, created_at as \"created_at: _\", created_by FROM comparison WHERE comparison.dirname = ?1 AND comparison.id NOT IN (SELECT comparison_id FROM vote WHERE user_id = ?2) LIMIT 1",
+  "query": "SELECT id, dirname, images, created_at as \"created_at: _\", created_by FROM comparison WHERE comparison.dirname = ?1 AND comparison.id NOT IN (SELECT comparison_id FROM vote WHERE user_id = ?2) ORDER BY RANDOM() LIMIT 1",
   "describe": {
     "columns": [
       {
@@ -40,5 +40,5 @@
       false
     ]
   },
-  "hash": "2bddf51f01612c438457e693ce519bdd16b6d7b9f19e6561d088ddce2603fb20"
+  "hash": "64076d423d1705604d344c6323e5fdf036eb61a8a14b006565eb0393fa390b60"
 }

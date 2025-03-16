@@ -33,7 +33,7 @@ async fn get_comparison_for_user<'r>(
         "SELECT id, dirname, images, created_at as \"created_at: _\", \
          created_by FROM comparison WHERE comparison.dirname = ?1 AND \
          comparison.id NOT IN (SELECT comparison_id FROM vote WHERE user_id = \
-         ?2) LIMIT 1",
+         ?2) ORDER BY RANDOM() LIMIT 1",
         dirname,
         user_id,
     )
